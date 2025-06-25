@@ -1,25 +1,11 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabase/supabaseClient";
+import { useSession } from "../lib/supabase/useSession";
+import { validateUserProfile } from "../lib/supabase/validateUserProfile";
 
 export default function AuthWidget() {
-  const [session, setSession] = useState(null);
-
-  useEffect(() => {
-    const session = supabase.auth
-      .getSession()
-      .then(({ data }) => setSession(data.session));
-
-    // Listen for auth state change
-    const { data: subsciption } = supabase.auth.onAuthStateChange(
-      (_, session) => {
-        setSession(session);
-      }
-    );
-
-    return () => {
-      subsciption.unsubscribe();
-    };
-  }, []);
+  const session = useSession();
+  const userId = session?.user?.id;
 
   const signIn = async () => {
     await supabase.auth.signInWithOtp({ email: prompt("Enter your email") });
@@ -40,6 +26,20 @@ export default function AuthWidget() {
         </button>
       </div>
     );
+  }
+
+  if (userId) {
+    console.log("Session: ", session);
+    // Validate user profile on session load
+    validateUserProfile(session.user.id);
+    //   .then((isValid) => {
+    //     if (!isValid) {
+    //       alert("Your profile is incomplete. Please update your profile.");
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error validating user profile:", error);
+    //   });
   }
 
   return (
