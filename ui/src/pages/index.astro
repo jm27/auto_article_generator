@@ -14,7 +14,7 @@ const { data: posts, error } = await supabase
 ---
 
 <Layout>
-	<Welcome />
+	<!-- <Welcome /> -->
 	<h1> Latest Posts </h1>
 	{console.log("Posts:", posts)}
 	{error ? <p>Error loading posts</p> : (

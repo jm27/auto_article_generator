@@ -1,3 +1,7 @@
+---
+import AuthWidget from "../components/AuthWidget";
+---
+
 <!doctype html>
 <html lang="en">
 	<head>
@@ -5,9 +9,14 @@
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>My Daily Feed</title>
 	</head>
 	<body>
+		<header>
+			<h2>My Daily Feed</h2>
+			<!-- client:load ensures React Hydrates only on the client -->
+			<AuthWidget client:load />
+		</header>
 		<slot />
 	</body>
 </html>
