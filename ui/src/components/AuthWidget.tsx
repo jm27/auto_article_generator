@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase/supabaseClient";
-import { useSession } from "../lib/supabase/useSession";
-import { validateUserProfile } from "../lib/supabase/validateUserProfile";
+import { useSession } from "../hooks/useSession";
+import { validateUserProfile } from "../lib/supabase/helpers";
 
 export default function AuthWidget() {
   const session = useSession();
   const userId = session?.user?.id;
 
   const signIn = async () => {
-    await supabase.auth.signInWithOtp({ email: prompt("Enter your email") });
-    alert("Check your email for the magic sign-in link!");
+    const email = prompt("Enter your email");
+    if (email) {
+      await supabase.auth.signInWithOtp({ email });
+      alert("Check your email for the magic sign-in link!");
+    } else {
+      alert("Email is required to sign in.");
+    }
   };
 
   const signOut = async () => {
@@ -32,14 +37,6 @@ export default function AuthWidget() {
     console.log("Session: ", session);
     // Validate user profile on session load
     validateUserProfile(session.user.id);
-    //   .then((isValid) => {
-    //     if (!isValid) {
-    //       alert("Your profile is incomplete. Please update your profile.");
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error validating user profile:", error);
-    //   });
   }
 
   return (

@@ -1,0 +1,32 @@
+---
+import { getSession } from '../lib/supabase/helpers';
+import { supabase } from '../lib/supabase/supabaseClient';
+// In an Astro server script:
+console.log('console.log: ', supabase);
+const session = getSession();
+const userId = session?.user.id;
+
+console.log('User ID:', userId);
+console.log('Session Data:', session);
+
+let posts;
+if (userId) {
+  // fetch user prefs first
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('tag_preferences')
+    .eq('id', userId)
+    .single();
+  posts = await supabase
+    .from('posts')
+    .select('*')
+    .contains('tags', profile?.tag_preferences)
+    .order('published_at', { ascending: false });
+} else {
+  posts = await supabase
+    .from('posts')
+    .select('*')
+    .order('published_at', { ascending: false })
+    .limit(10);
+}
+---

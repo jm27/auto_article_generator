@@ -1,12 +1,12 @@
-import { use, useEffect, useState } from "react";
-import { supabase } from "./supabaseClient";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase/supabaseClient";
 import type { Session } from "@supabase/supabase-js";
 
 export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    const sessionData = supabase.auth
+    supabase?.auth
       .getSession()
       .then(({ data }) => setSession(data.session))
       .catch((error) => {
@@ -14,7 +14,7 @@ export function useSession() {
         return null;
       });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+    const { data: authListener } = supabase?.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event, session);
         setSession(session);
