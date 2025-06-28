@@ -1,13 +1,10 @@
----
+<!-- ---
 import { getSession } from '../lib/supabase/helpers';
 import { supabase } from '../lib/supabase/supabaseClient';
 // In an Astro server script:
-console.log('console.log: ', supabase);
 const session = getSession();
 const userId = session?.user.id;
 
-console.log('User ID:', userId);
-console.log('Session Data:', session);
 
 let posts;
 if (userId) {
@@ -29,4 +26,4 @@ if (userId) {
     .order('published_at', { ascending: false })
     .limit(10);
 }
----
+--- -->

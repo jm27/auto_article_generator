@@ -27,10 +27,7 @@ export default function ProfileForm({ allTags, session }: ProfileFormProps) {
           if (error) {
             console.error("Error fetching user tags:", error);
           } else if (data && data.tag_preferences) {
-            console.log("Fetched user tags:", data.tag_preferences);
-            console.log("Data: ", data);
-            console.log("session.user.id: ", session.user.id);
-            console.log("selectedTags: ", selectedTags);
+            // Parse the tag_preferences if they are stored as JSON strings
             setSelectedTags(data.tag_preferences);
           }
           setLoading(false);
@@ -88,7 +85,6 @@ export default function ProfileForm({ allTags, session }: ProfileFormProps) {
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {console.log("selectedTags: ", selectedTags)}
             {allTags.map((tag: Tag, index) => (
               <button
                 key={index}
