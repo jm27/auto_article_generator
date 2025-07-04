@@ -1,7 +1,9 @@
 import axios from "axios";
 import { supabase } from "../lib/supabase/supabaseClient.ts";
 import { getSampleMovies } from "./fetch-movies";
-const SITE_URL = import.meta.env.SITE_URL;
+const SITE_URL =
+  import.meta.env.SITE_URL ||
+  `https://${import.meta.env.PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
 
 export async function generateAndSaveMovies() {
   console.log("meta.env: ", import.meta.env);
