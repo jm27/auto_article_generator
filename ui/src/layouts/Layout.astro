@@ -1,5 +1,6 @@
 ---
 import AuthWidget from "../components/AuthWidget";
+import SubscribeForm from "../components/SubscribeForm";
 ---
 
 <!doctype html>
@@ -18,6 +19,9 @@ import AuthWidget from "../components/AuthWidget";
 			<AuthWidget client:load />
 		</header>
 		<slot />
+		<footer>
+			<SubscribeForm client:load />
+		</footer>
 	</body>
 </html>
 

@@ -62,3 +62,18 @@ export async function getSession(): Promise<Session | null> {
   }
   return data.session;
 }
+
+export async function validateSubscriber(email: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("subscribers")
+      .upsert({ email, subscription_status: true }, { onConflict: ["email"] });
+    if (error) {
+      console.error("[validateSubscriber] Error upserting subscriber:", error);
+      throw new Error("Failed to validate subscriber");
+    }
+  } catch (error) {
+    console.error("[validateSubscriber] Error validating subscriber:", error);
+    throw new Error("Failed to validate subscriber");
+  }
+}

@@ -34,7 +34,6 @@ export default function AuthWidget() {
   }
 
   if (userId) {
-    console.log("Session: ", session);
     // Validate user profile on session load
     validateUserProfile(session.user.id);
   }
