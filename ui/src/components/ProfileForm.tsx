@@ -87,6 +87,7 @@ export default function ProfileForm({ allTags, session }: ProfileFormProps) {
           <div className="flex flex-wrap gap-2">
             {allTags.map((tag: Tag, index) => (
               <button
+                className="cursor-pointer rounded-lg"
                 key={index}
                 onClick={() => toggleTag(tag)}
                 style={{
@@ -111,7 +112,7 @@ export default function ProfileForm({ allTags, session }: ProfileFormProps) {
       </div>
       <button
         onClick={saveTags}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         style={{ marginTop: "1rem" }}
         disabled={selectedTags.length < 2 || loading}
         title={

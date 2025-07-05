@@ -36,7 +36,7 @@ export default function SubscribeForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full p-2 sm:p-3 text-base font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+        className="cursor-pointer w-full p-2 sm:p-3 text-base font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {status === "loading" ? "Subscribing..." : "Subscribe"}
       </button>
