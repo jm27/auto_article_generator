@@ -1,40 +1,34 @@
 ---
 import { supabase } from "../../lib/supabase/supabaseClient"
+import "../../styles/global.css";
 
 export async function getStaticPaths() {
     console.log("Supabase posts data inside")
  
-    
-const { data: posts, error: postsError } = await supabase
-    .from('posts')
-    .select('slug')
-    .order('published_at', { ascending: false });
+    const { data: posts, error: postsError } = await supabase
+        .from('posts')
+        .select('slug')
+        .order('published_at', { ascending: false });
 
     if (postsError) {
-    throw new Error(`Error fetching posts: ${postsError.message}`);
-}
+        throw new Error(`Error fetching posts: ${postsError.message}`);
+    }
 
-console.log("Supabase posts data:", posts, "Error:", postsError);
-// If no posts are found, return a default path
-if (!posts || posts.length === 0) {
-    console.warn("No posts found, returning default path");
-    // Return a default path if no posts are found
-    return [{
-        params: { slug: "the-old-guard-2" }
-}]
-}
+    console.log("Supabase posts data:", posts, "Error:", postsError);
+    // If no posts are found, return a default path
+    if (!posts || posts.length === 0) {
+        console.warn("No posts found, returning default path");
+        // Return a default path if no posts are found
+        return [{
+            params: { slug: "the-old-guard-2" }
+        }]
+    }
 
-// Map the posts to the required format for getStaticPaths
-return posts.map((post: { slug: any; }) => ({
-    params: { slug: post.slug },
-}));
-
+    // Map the posts to the required format for getStaticPaths
+    return posts.map((post) => ({
+        params: { slug: post.slug },
+    }));
 }
-// export function getStaticPaths() {
-//     return (posts ?? []).map((post: { slug: any; }) => ({
-//         params: { slug: post.slug },
-//     }));
-// }
 // Get the post by slug
 const { slug } = Astro.params;
 
@@ -50,12 +44,18 @@ if (error) {
 ---
 {
     post ? (
-        <article>
-            <h1>{post.title}</h1>
-            <p><em>Published on {new Date(post.published_at).toLocaleDateString()}</em></p>
-            <p>{post.content}</p>
+        <article class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200">
+            <header class="mb-6 border-b border-gray-100 pb-4">
+                <h1 class="text-4xl font-extrabold text-gray-900 mb-2 leading-tight">{post.title}</h1>
+                <p class="text-sm text-gray-500 italic">Published on {new Date(post.published_at).toLocaleDateString()}</p>
+            </header>
+            <section class="prose prose-lg prose-indigo text-gray-800">
+                <p class="mb-6 text-lg leading-relaxed">{post.content}</p>
+            </section>
         </article>
     ) : (
-        <p>POST not found :/...</p>
+        <div class="max-w-2xl mx-auto p-8 text-center bg-red-50 border border-red-200 rounded-lg mt-10">
+            <p class="text-red-700 text-lg font-semibold">POST not found :/...</p>
+        </div>
     )
 }
