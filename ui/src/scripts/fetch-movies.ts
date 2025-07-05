@@ -19,7 +19,6 @@ interface MovieResult {
 }
 export async function getSampleMovies(): Promise<any[]> {
   try {
-    console.log("API Key:", TMDB_API_KEY);
     const response = await axios.get(
       `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=en-US&page=1`
     );
