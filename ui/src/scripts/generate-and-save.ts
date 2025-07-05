@@ -1,13 +1,15 @@
 import axios from "axios";
 import { supabase } from "../lib/supabase/supabaseClient.ts";
 import { getSampleMovies } from "./fetch-movies";
-const SITE_URL =
-  import.meta.env.SITE_URL ||
-  `https://${import.meta.env.PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
+const SITE_URL = import.meta.env.SITE_URL;
 
 export async function generateAndSaveMovies() {
-  console.log("meta.env: ", import.meta.env);
-  console.log("SITE_URL:", SITE_URL);
+  console.log("process.env: ", import.meta.env);
+  console.log("SITE_URL: ", SITE_URL);
+  console.log(
+    "PUBLIC_VERCEL_PROJECT_PRODUCTION_URL: ",
+    import.meta.env.PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+  );
   const movies = await getSampleMovies();
 
   if (!movies || movies.length === 0) {
