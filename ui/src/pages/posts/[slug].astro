@@ -1,0 +1,61 @@
+---
+import { supabase } from "../../lib/supabase/supabaseClient"
+
+export async function getStaticPaths() {
+    console.log("Supabase posts data inside")
+ 
+    
+const { data: posts, error: postsError } = await supabase
+    .from('posts')
+    .select('slug')
+    .order('published_at', { ascending: false });
+
+    if (postsError) {
+    throw new Error(`Error fetching posts: ${postsError.message}`);
+}
+
+console.log("Supabase posts data:", posts, "Error:", postsError);
+// If no posts are found, return a default path
+if (!posts || posts.length === 0) {
+    console.warn("No posts found, returning default path");
+    // Return a default path if no posts are found
+    return [{
+        params: { slug: "the-old-guard-2" }
+}]
+}
+
+// Map the posts to the required format for getStaticPaths
+return posts.map((post: { slug: any; }) => ({
+    params: { slug: post.slug },
+}));
+
+}
+// export function getStaticPaths() {
+//     return (posts ?? []).map((post: { slug: any; }) => ({
+//         params: { slug: post.slug },
+//     }));
+// }
+// Get the post by slug
+const { slug } = Astro.params;
+
+const { data: post, error } = await supabase
+    .from('posts')
+    .select('title, content, published_at')
+    .eq('slug', slug)
+    .single();
+if (error) {
+    throw new Error(`Post not found: ${error.message}`);
+}
+
+---
+{
+    post ? (
+        <article>
+            <h1>{post.title}</h1>
+            <p><em>Published on {new Date(post.published_at).toLocaleDateString()}</em></p>
+            <p>{post.content}</p>
+        </article>
+    ) : (
+        <p>POST not found :/...</p>
+    )
+}
