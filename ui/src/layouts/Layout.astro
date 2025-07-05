@@ -12,14 +12,16 @@ import SubscribeForm from "../components/SubscribeForm";
 		<meta name="generator" content={Astro.generator} />
 		<title>My Daily Feed</title>
 	</head>
-	<body>
-		<header>
-			<h2>My Daily Feed</h2>
+	<body class="bg-gray-50 min-h-screen flex flex-col">
+		<header class="bg-white shadow-md py-4 px-2 sm:py-6 sm:px-4 flex flex-col items-center border-b border-gray-200 w-full">
+			<h2 class="text-2xl sm:text-3xl font-extrabold text-indigo-700 tracking-tight mb-2 text-center">My Daily Feed</h2>
 			<!-- client:load ensures React Hydrates only on the client -->
 			<AuthWidget client:load />
 		</header>
-		<slot />
-		<footer>
+		<main class="flex-1 w-full max-w-full sm:max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+			<slot />
+		</main>
+		<footer class="bg-white border-t border-gray-200 py-4 px-2 sm:py-6 sm:px-4 flex flex-col items-center mt-8 w-full">
 			<SubscribeForm client:load />
 		</footer>
 	</body>

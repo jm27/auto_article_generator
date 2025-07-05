@@ -20,22 +20,10 @@ export default function SubscribeForm() {
     }
   };
 
-  // Unsubscribe function (optional)
-  //   await supabase
-  //   .from('subscribers')
-  //   .update({ subscription_status: false })
-  //   .eq('email', subscriberEmail);
-
   return (
     <form
       onSubmit={subscribe}
-      style={{
-        display: "flex",
-        gap: "10px",
-        flexDirection: "column",
-        maxWidth: "400px",
-        margin: "0 auto",
-      }}
+      className="flex flex-col gap-4 w-full max-w-full sm:max-w-md mx-auto p-3 sm:p-6 bg-white rounded-lg shadow border border-gray-200"
     >
       <input
         type="email"
@@ -43,27 +31,24 @@ export default function SubscribeForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
-        style={{ padding: "10px", fontSize: "16px" }}
+        className="w-full p-2 sm:p-3 text-base rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       <button
         type="submit"
         disabled={status === "loading"}
-        style={{
-          padding: "10px",
-          fontSize: "16px",
-          backgroundColor: "#0070f3",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-        }}
+        className="w-full p-2 sm:p-3 text-base font-semibold rounded bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {status === "loading" ? "Subscribing..." : "Subscribe"}
       </button>
       {status === "sent" && (
-        <p style={{ color: "green" }}>Subscribed! Thank you. </p>
+        <p className="text-green-600 font-medium text-center">
+          Subscribed! Thank you.
+        </p>
       )}
       {status === "error" && (
-        <p style={{ color: "red" }}>Something went wrong. Please try again.</p>
+        <p className="text-red-600 font-medium text-center">
+          Something went wrong. Please try again.
+        </p>
       )}
     </form>
   );

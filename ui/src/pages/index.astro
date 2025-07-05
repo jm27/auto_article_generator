@@ -4,6 +4,7 @@ import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase/supabaseClient';
 import { getSampleMovies } from '../scripts/fetch-movies';
 import { generateAndSaveMovies } from '../scripts/generate-and-save';
+import '../styles/global.css';
 
 const { data: posts, error } = await supabase
 	.from('posts')
@@ -18,13 +19,15 @@ console.log("generateAndSaveMovies result:", result);
 
 <Layout>
 	<!-- <Welcome /> -->
-	<h1> Latest Posts </h1>
-	{error ? <p>Error loading posts</p> : (
-		<ul>
+	<h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Latest Posts</h1>
+	{error ? (
+		<p class="text-red-600 text-center font-semibold">Error loading posts</p>
+	) : (
+		<ul class="w-full max-w-full sm:max-w-2xl mx-auto divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4">
 			{posts.map(p => 
-			<li>
-				<a href={`/posts/${p.slug}`}>
-				{p.title}
+			<li key={p.slug} class="py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded">
+				<a href={`/posts/${p.slug}`} class="block text-base sm:text-xl font-bold text-indigo-700 hover:underline truncate">
+					{p.title}
 				</a>
 			</li>
 			)}

@@ -44,18 +44,18 @@ if (error) {
 ---
 {
     post ? (
-        <article class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg border border-gray-200">
-            <header class="mb-6 border-b border-gray-100 pb-4">
-                <h1 class="text-4xl font-extrabold text-gray-900 mb-2 leading-tight">{post.title}</h1>
-                <p class="text-sm text-gray-500 italic">Published on {new Date(post.published_at).toLocaleDateString()}</p>
+        <article class="w-full max-w-full sm:max-w-3xl mx-auto p-3 sm:p-6 bg-white rounded-lg shadow-lg border border-gray-200">
+            <header class="mb-4 sm:mb-6 border-b border-gray-100 pb-2 sm:pb-4">
+                <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-2 leading-tight text-center break-words">{post.title}</h1>
+                <p class="text-xs sm:text-sm text-gray-500 italic text-center">Published on {new Date(post.published_at).toLocaleDateString()}</p>
             </header>
-            <section class="prose prose-lg prose-indigo text-gray-800">
-                <p class="mb-6 text-lg leading-relaxed">{post.content}</p>
+            <section class="prose prose-base sm:prose-lg prose-indigo text-gray-800">
+                <p class="mb-4 sm:mb-6 text-base sm:text-lg leading-relaxed break-words">{post.content}</p>
             </section>
         </article>
     ) : (
-        <div class="max-w-2xl mx-auto p-8 text-center bg-red-50 border border-red-200 rounded-lg mt-10">
-            <p class="text-red-700 text-lg font-semibold">POST not found :/...</p>
+        <div class="w-full max-w-full sm:max-w-2xl mx-auto p-6 sm:p-8 text-center bg-red-50 border border-red-200 rounded-lg mt-8 sm:mt-10">
+            <p class="text-red-700 text-base sm:text-lg font-semibold">POST not found :/...</p>
         </div>
     )
 }
