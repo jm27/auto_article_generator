@@ -25,7 +25,7 @@ async function getMovies() {
   }
 }
 
-export async function GET(request, res) {
+export async function GET(request) {
   try {
     console.log("PROCESS ENV:", process.env);
     console.log("SITE URL:", SITE_URL);
@@ -42,10 +42,13 @@ export async function GET(request, res) {
 
     if (fetchError) {
       console.error("Error fetching existing movies:", fetchError);
-      res
-        .status(500)
-        .json({ error: "Error fetching existing movies", details: fetchError });
-      return;
+      return new Response(
+        JSON.stringify({
+          error: "Error fetching existing movies",
+          details: fetchError,
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     console.log("Existing movies in DB:", existingMovies);
@@ -62,19 +65,21 @@ export async function GET(request, res) {
       console.log(
         "No new movies to save. All movies already exist in Supabase."
       );
-      res
-        .status(200)
-        .json({
+      return new Response(
+        JSON.stringify({
           message:
             "No new movies to save. All movies already exist in Supabase.",
-        });
-      return;
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     if (!movies || movies.length === 0) {
       console.error("No movies found to save.");
-      res.status(404).json({ error: "No movies found to save." });
-      return;
+      return new Response(
+        JSON.stringify({ error: "No movies found to save." }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     let saved = 0;
@@ -119,18 +124,20 @@ export async function GET(request, res) {
         saved++;
       }
     }
-    res
-      .status(200)
-      .json({
+    return new Response(
+      JSON.stringify({
         message: `Movies processed. Saved: ${saved}, Failed: ${failed}`,
-      });
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (err) {
     console.error("Unexpected error in ingest-movies:", err);
-    res
-      .status(500)
-      .json({
+    return new Response(
+      JSON.stringify({
         error: "Unexpected error in ingest-movies",
         details: err.message,
-      });
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 }
