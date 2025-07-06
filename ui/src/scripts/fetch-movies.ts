@@ -3,11 +3,14 @@ import { mapGenreIdsToName } from "../utils/movies";
 import { fetchReviewsForMovie } from "./fetch-reviews";
 
 const TMDB_API_KEY = import.meta.env.TMDB_API_KEY;
-interface Movie {
+//api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}
+https: interface Movie {
   genre_ids: number[];
   id: number;
   title: string;
   overview: string;
+  poster_path: string;
+  backdrop_path: string;
 }
 
 interface MovieResult {
@@ -16,6 +19,7 @@ interface MovieResult {
   synopsis: string;
   tags: string[];
   reviews: any[];
+  images: string[];
 }
 export async function getSampleMovies(): Promise<any[]> {
   try {
@@ -27,13 +31,14 @@ export async function getSampleMovies(): Promise<any[]> {
     const typedResults: Movie[] = results as Movie[];
 
     return await Promise.all(
-      typedResults.slice(0, 5).map(async (m: Movie): Promise<MovieResult> => {
+      typedResults.slice(0, 10).map(async (m: Movie): Promise<MovieResult> => {
         return {
           id: m.id,
           title: m.title,
           synopsis: m.overview,
           tags: mapGenreIdsToName(m.genre_ids) || [],
           reviews: (await fetchReviewsForMovie(m.id)) || [],
+          images: [m.poster_path || "", m.backdrop_path || ""],
         };
       })
     );

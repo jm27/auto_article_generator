@@ -77,6 +77,9 @@ export async function generateAndSaveMovies() {
         tags: [...(movie.tags || [])],
         published_at: new Date().toISOString(),
         reviews: [...(movie.reviews || [])],
+        images: movie.images.map((img: string) => {
+          return `https://image.tmdb.org/t/p/original${img}`;
+        }),
       },
       { onConflict: ["id"] }
     );

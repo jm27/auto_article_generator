@@ -34,7 +34,7 @@ const { slug } = Astro.params;
 
 const { data: post, error } = await supabase
     .from('posts')
-    .select('title, content, published_at')
+    .select('title, content, published_at, images')
     .eq('slug', slug)
     .single();
 if (error) {
@@ -61,11 +61,35 @@ if (error) {
               Published on {new Date(post.published_at).toLocaleDateString()}
             </p>
           </header>
+                    {post.images && post.images[0] && (
+            <div class="flex flex-col items-center gap-2 mb-4 w-full">
+              <img
+                src={post.images[0]}
+                alt={post.title + ' poster'}
+                class="w-4/5 max-w-lg object-contain rounded-md mx-auto rounded-poster"
+                style="max-height:400px;"
+                loading="lazy"
+              />
+              <span class="text-xs italic text-gray-500 mt-1">Image source: themoviedb.org</span>
+            </div>
+          )}
           <section class="prose prose-base text-gray-800 sm:prose-lg lg:prose-xl">
             <p class="mb-4 text-base leading-relaxed sm:text-lg">
               {post.content}
             </p>
           </section>
+          {post.images && post.images[1] && (
+            <div class="flex flex-col items-center gap-2 mb-4">
+              <img
+                src={post.images[1]}
+                alt={post.title + ' backdrop'}
+                class="w-4/5 max-w-lg object-contain rounded-md mx-auto"
+                style="max-height:400px;"
+                loading="lazy"
+              />
+              <span class="text-xs italic text-gray-500 mt-1">Image source: themoviedb.org</span>
+            </div>
+          )}
         </article>
       ) : (
         <div class="w-full max-w-full sm:max-w-2xl mx-auto p-8 text-center bg-red-50 border border-red-200 rounded-lg mt-10">
@@ -75,3 +99,9 @@ if (error) {
     }
   </body>
 </html>
+
+<style>
+    .rounded-poster {
+        border-radius: 12rem;
+    }
+</style>

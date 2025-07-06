@@ -9,7 +9,7 @@ import '../styles/global.css';
 const { data: posts, error } = await supabase
 	.from('posts')
 	.select('*')
-	.limit(5);
+	.limit(10);
 
 const result = await generateAndSaveMovies();
 console.log("generateAndSaveMovies result:", result);
