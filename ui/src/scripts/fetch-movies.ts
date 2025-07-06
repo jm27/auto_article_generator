@@ -4,7 +4,7 @@ import { fetchReviewsForMovie } from "./fetch-reviews";
 
 const TMDB_API_KEY = import.meta.env.TMDB_API_KEY;
 //api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}
-https: interface Movie {
+interface Movie {
   genre_ids: number[];
   id: number;
   title: string;
