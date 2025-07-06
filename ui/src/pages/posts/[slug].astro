@@ -42,39 +42,36 @@ if (error) {
 }
 
 ---
-{
-    post ? (
-<article class="
-  max-w-xl mx-auto
-  px-4 py-6
-  bg-white rounded-lg shadow-lg border border-gray-200
-  sm:max-w-2xl sm:px-6
-  lg:max-w-3xl lg:px-8 lg:py-8
-">
-  <header class="mb-4 sm:mb-6 border-b border-gray-100 pb-3 sm:pb-4">
-    <h1 class="
-      text-2xl font-extrabold text-gray-900 mb-1 leading-tight
-      sm:text-3xl
-      lg:text-4xl
-    ">
-      {post.title}
-    </h1>
-    <p class="text-xs text-gray-500 italic sm:text-sm">
-      Published on {new Date(post.published_at).toLocaleDateString()}
-    </p>
-  </header>
-  <section class="prose prose-base text-gray-800
-    sm:prose-lg
-    lg:prose-xl
-  ">
-    <p class="mb-4 text-base leading-relaxed sm:text-lg">
-      {post.content}
-    </p>
-  </section>
-</article>
-    ) : (
-        <div class="max-w-2xl mx-auto p-8 text-center bg-red-50 border border-red-200 rounded-lg mt-10">
-            <p class="text-red-700 text-lg font-semibold">POST not found :/...</p>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{post.title} - My Daily Feed</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col">
+    {
+      post ? (
+        <article class="w-full max-w-full sm:max-w-2xl lg:max-w-3xl mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8 bg-white rounded-lg shadow-lg border border-gray-200">
+          <header class="mb-4 sm:mb-6 border-b border-gray-100 pb-3 sm:pb-4">
+            <h1 class="text-2xl font-extrabold text-gray-900 mb-1 leading-tight sm:text-3xl lg:text-4xl">
+              {post.title}
+            </h1>
+            <p class="text-xs text-gray-500 italic sm:text-sm">
+              Published on {new Date(post.published_at).toLocaleDateString()}
+            </p>
+          </header>
+          <section class="prose prose-base text-gray-800 sm:prose-lg lg:prose-xl">
+            <p class="mb-4 text-base leading-relaxed sm:text-lg">
+              {post.content}
+            </p>
+          </section>
+        </article>
+      ) : (
+        <div class="w-full max-w-full sm:max-w-2xl mx-auto p-8 text-center bg-red-50 border border-red-200 rounded-lg mt-10">
+          <p class="text-red-700 text-lg font-semibold">POST not found :/...</p>
         </div>
-    )
-}
+      )
+    }
+  </body>
+</html>
