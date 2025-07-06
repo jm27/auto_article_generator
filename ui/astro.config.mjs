@@ -3,7 +3,7 @@ import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 
 import react from "@astrojs/react";
-import vercelServerless from "@astrojs/vercel/serverless";
+// import vercelServerless from "@astrojs/vercel/serverless";
 import vercel from "@astrojs/vercel/serverless";
 
 // https://astro.build/config
