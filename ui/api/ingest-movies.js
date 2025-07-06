@@ -25,80 +25,112 @@ async function getMovies() {
   }
 }
 
-export async function GET(request) {
-  console.log("PROCESS ENV:", process.env);
-  console.log("SITE URL:", SITE_URL);
-  const movies = await getMovies();
-  console.log("Fetched movies:", movies);
-  const movieIds = movies.map((m) => m.id);
-  console.log("Movie IDs to check in DB:", movieIds);
+export async function GET(request, res) {
+  try {
+    console.log("PROCESS ENV:", process.env);
+    console.log("SITE URL:", SITE_URL);
+    const movies = await getMovies();
+    console.log("Fetched movies:", movies);
+    const movieIds = movies.map((m) => m.id);
+    console.log("Movie IDs to check in DB:", movieIds);
 
-  // Query Supabase to check if movies already exist by IDs
-  const { data: existingMovies, error: fetchError } = await supabase
-    .from("posts")
-    .select("id")
-    .in("id", movieIds);
+    // Query Supabase to check if movies already exist by IDs
+    const { data: existingMovies, error: fetchError } = await supabase
+      .from("posts")
+      .select("id")
+      .in("id", movieIds);
 
-  if (fetchError) {
-    console.error("Error fetching existing movies:", fetchError);
-    return;
-  }
-
-  console.log("Existing movies in DB:", existingMovies);
-
-  // Create a set of existing movie IDs for quick lookup
-  const existingMovieIds = new Set((existingMovies || []).map((m) => m.id));
-  console.log("Existing movie IDs:", existingMovieIds);
-
-  // Filter out movies that already exist in Supabase
-  const newMovies = movies.filter((movie) => !existingMovieIds.has(movie.id));
-  console.log("New movies to process:", newMovies);
-
-  if (newMovies.length === 0) {
-    console.log("No new movies to save. All movies already exist in Supabase.");
-    return;
-  }
-
-  if (!movies || movies.length === 0) {
-    console.error("No movies found to save.");
-    return;
-  }
-
-  for (const movie of newMovies) {
-    console.log(`Processing movie: ${movie.title} (ID: ${movie.id})`);
-    // Generate Summary
-    const response = await axios.post(`${SITE_URL}/api/generate-content`, {
-      title: movie.title,
-      synopsis: movie.synopsis,
-      reviews: movie.reviews,
-    });
-    console.log("Summary API response:", response.data);
-    const summary = response.data.summary;
-    if (!summary) {
-      console.error(`No summary generated for movie: ${movie.title}`);
-      continue;
+    if (fetchError) {
+      console.error("Error fetching existing movies:", fetchError);
+      res
+        .status(500)
+        .json({ error: "Error fetching existing movies", details: fetchError });
+      return;
     }
-    // Save to Supabase
-    const { error } = await supabase.from("posts").upsert(
-      {
-        id: movie.id,
+
+    console.log("Existing movies in DB:", existingMovies);
+
+    // Create a set of existing movie IDs for quick lookup
+    const existingMovieIds = new Set((existingMovies || []).map((m) => m.id));
+    console.log("Existing movie IDs:", existingMovieIds);
+
+    // Filter out movies that already exist in Supabase
+    const newMovies = movies.filter((movie) => !existingMovieIds.has(movie.id));
+    console.log("New movies to process:", newMovies);
+
+    if (newMovies.length === 0) {
+      console.log(
+        "No new movies to save. All movies already exist in Supabase."
+      );
+      res
+        .status(200)
+        .json({
+          message:
+            "No new movies to save. All movies already exist in Supabase.",
+        });
+      return;
+    }
+
+    if (!movies || movies.length === 0) {
+      console.error("No movies found to save.");
+      res.status(404).json({ error: "No movies found to save." });
+      return;
+    }
+
+    let saved = 0;
+    let failed = 0;
+    for (const movie of newMovies) {
+      console.log(`Processing movie: ${movie.title} (ID: ${movie.id})`);
+      // Generate Summary
+      const response = await axios.post(`${SITE_URL}/api/generate-content`, {
         title: movie.title,
-        slug: movie.title.toLowerCase().replace(/\s+/g, "-"),
-        content: summary,
-        tags: [...(movie.tags || [])],
-        published_at: new Date().toISOString(),
-        reviews: [...(movie.reviews || [])],
-        images: movie.images.map((img) => {
-          return `https://image.tmdb.org/t/p/original${img}`;
-        }),
-      },
-      { onConflict: ["id"] }
-    );
+        synopsis: movie.synopsis,
+        reviews: movie.reviews,
+      });
+      console.log("Summary API response:", response.data);
+      const summary = response.data.summary;
+      if (!summary) {
+        console.error(`No summary generated for movie: ${movie.title}`);
+        failed++;
+        continue;
+      }
+      // Save to Supabase
+      const { error } = await supabase.from("posts").upsert(
+        {
+          id: movie.id,
+          title: movie.title,
+          slug: movie.title.toLowerCase().replace(/\s+/g, "-"),
+          content: summary,
+          tags: [...(movie.tags || [])],
+          published_at: new Date().toISOString(),
+          reviews: [...(movie.reviews || [])],
+          images: movie.images.map((img) => {
+            return `https://image.tmdb.org/t/p/original${img}`;
+          }),
+        },
+        { onConflict: ["id"] }
+      );
 
-    if (error) {
-      console.error(`Error saving movie ${movie.title}:`, error);
-    } else {
-      console.log(`Movie ${movie.title} saved successfully.`);
+      if (error) {
+        console.error(`Error saving movie ${movie.title}:`, error);
+        failed++;
+      } else {
+        console.log(`Movie ${movie.title} saved successfully.`);
+        saved++;
+      }
     }
+    res
+      .status(200)
+      .json({
+        message: `Movies processed. Saved: ${saved}, Failed: ${failed}`,
+      });
+  } catch (err) {
+    console.error("Unexpected error in ingest-movies:", err);
+    res
+      .status(500)
+      .json({
+        error: "Unexpected error in ingest-movies",
+        details: err.message,
+      });
   }
 }
