@@ -5,7 +5,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const VERCEL_SITE_URL = process.env.VERCEL_URL;
+const VERCEL_SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 const SITE_URL = VERCEL_SITE_URL
   ? `https://${VERCEL_SITE_URL}`
   : process.env.SITE_URL;
