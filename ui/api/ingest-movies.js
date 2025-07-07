@@ -1,6 +1,10 @@
 import axios from "axios";
 import { supabase } from "./helpers/supabaseClient.js";
 // import { getMovies } from "./get-movies.js";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 const VERCEL_SITE_URL = process.env.VERCEL_URL;
 const SITE_URL = VERCEL_SITE_URL
   ? `https://${VERCEL_SITE_URL}`
