@@ -7,6 +7,7 @@ import {
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
 async function getSampleMovies() {
+  console.log("TMDB_API_KEY:", TMDB_API_KEY);
   try {
     const response = await axios.get(
       `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=en-US&page=1`
