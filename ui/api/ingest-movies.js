@@ -25,6 +25,15 @@ async function getMovies() {
   }
 }
 
+async function sendEmailNotification(subject, body) {
+  await resend.emails.send({
+    from: process.env.EMAIL_FROM,
+    to: process.env.EMAIL_TO,
+    subject: subject,
+    html: `<p>${body}</p>`,
+  });
+}
+
 export async function GET(request) {
   try {
     console.log("PROCESS ENV:", process.env);
@@ -33,7 +42,13 @@ export async function GET(request) {
     console.log("Fetched movies:", movies);
     const movieIds = movies.map((m) => m.id);
     console.log("Movie IDs to check in DB:", movieIds);
-
+    const newMoviesAdded = [
+      {
+        movieTitle: "",
+        movieSummary: "",
+        movieId: "",
+      },
+    ];
     // Query Supabase to check if movies already exist by IDs
     const { data: existingMovies, error: fetchError } = await supabase
       .from("posts")
@@ -62,6 +77,11 @@ export async function GET(request) {
     console.log("New movies to process:", newMovies);
 
     if (newMovies.length === 0) {
+      // Send email notification if no new movies
+      await sendEmailNotification(
+        "Daily Movie Ingestion Report",
+        "No new movies to save. All movies already exist in Supabase."
+      );
       console.log(
         "No new movies to save. All movies already exist in Supabase."
       );
@@ -121,17 +141,44 @@ export async function GET(request) {
         failed++;
       } else {
         console.log(`Movie ${movie.title} saved successfully.`);
+        // Add to newMoviesAdded array for email notification
+        console.log("Adding movie to newMoviesAdded:", movie.title);
+        newMoviesAdded.push({
+          movieTitle: movie.title,
+          movieSummary: summary,
+          movieId: movie.id,
+        });
         saved++;
       }
     }
+    // Send email notification after processing
+    await sendEmailNotification(
+      "Daily Movie Ingestion Report",
+      `Movies processed. Saved: ${saved}, Failed: ${failed}, New Movies Added: ${newMoviesAdded
+        .map(
+          (movie) =>
+            `<strong>${movie.movieTitle}</strong> (${movie.movieId}) - ${movie.movieSummary}`
+        )
+        .join("<br>")}`
+    );
+
     return new Response(
       JSON.stringify({
-        message: `Movies processed. Saved: ${saved}, Failed: ${failed}`,
+        message: `Movies processed. Saved: ${saved}, Failed: ${failed}, New Movies Added: ${newMoviesAdded
+          .map(
+            (movie) =>
+              `<strong>${movie.movieTitle}</strong> (${movie.movieId}) - ${movie.movieSummary}`
+          )
+          .join("<br>")}`,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("Unexpected error in ingest-movies:", err);
+    await sendEmailNotification(
+      "Daily Movie Ingestion Report",
+      `Unexpected error in ingest-movies: ${err.message}`
+    );
     return new Response(
       JSON.stringify({
         error: "Unexpected error in ingest-movies",
