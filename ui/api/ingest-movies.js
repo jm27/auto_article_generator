@@ -42,6 +42,8 @@ export async function GET(request) {
   try {
     console.log("PROCESS ENV:", process.env);
     console.log("SITE URL:", SITE_URL);
+    console.log("TMDB_API_KEY:", process.env.TMDB_API_KEY);
+
     const movies = await getMovies();
     console.log("Fetched movies:", movies);
     const movieIds = movies.map((m) => m.id);
