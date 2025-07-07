@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/ingest-movies",
-      "schedule": "*/1 * * * *"
+      "schedule": "30 0 * * *"
     }
   ]
 }
