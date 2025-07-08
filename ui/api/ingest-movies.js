@@ -6,9 +6,11 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const VERCEL_SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+// const VERCEL_SITE_URL = process.env.VERCEL_URL;  // RUN in local uncomment the other line
 const SITE_URL = VERCEL_SITE_URL
   ? `https://${VERCEL_SITE_URL}`
-  : process.env.SITE_URL;
+  : // ? `http://${VERCEL_SITE_URL}` // RUN in local uncomment this line
+    process.env.SITE_URL;
 
 /**
  * Generates and saves movies to Supabase.
@@ -40,10 +42,6 @@ async function sendEmailNotification(subject, body) {
 
 export async function GET(request) {
   try {
-    console.log("PROCESS ENV:", process.env);
-    console.log("SITE URL:", SITE_URL);
-    console.log("TMDB_API_KEY:", process.env.TMDB_API_KEY);
-
     const movies = await getMovies();
     console.log("Fetched movies:", movies);
     const movieIds = movies.map((m) => m.id);
