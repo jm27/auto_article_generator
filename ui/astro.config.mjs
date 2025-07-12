@@ -11,12 +11,12 @@ export default defineConfig({
   integrations: [react()],
   output: "server",
   adapter: vercel({
+    includeFiles: ["**/*.mjml"],
     webAnalytics: {
       enabled: true,
     },
     maxDuration: 60  }),
   vite: {
-    plugins: [tailwindcss()],
-    assetsInclude: ['**/*.mjml'],
-  },
+    plugins: [tailwindcss()]
+    },
 });
