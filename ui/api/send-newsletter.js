@@ -5,6 +5,7 @@ import { supabase } from "./helpers/supabaseClient.js";
 import mjml2html from "mjml";
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
+import mjmlTemplate from '../src/templates/newsletter.mjml.js';
 
 export default async function handler(req, res) {
   console.log("[Newsletter] Handler started");
@@ -23,8 +24,8 @@ export default async function handler(req, res) {
     `[Newsletter] Users tag preferences: ${users[0].tag_preferences.join(", ")}`
   );
 
-  const templatePath = path.join(process.cwd(), 'templates', 'newsletter.mjml');
-  const mjmlTemplate = await fs.readFile(templatePath, 'utf8');
+  // const templatePath = path.join(process.cwd(), 'templates', 'newsletter.mjml');
+  // const mjmlTemplate = await fs.readFile(templatePath, 'utf8');
 
   const { data: posts, error: postsError } = await supabase
     .from("posts")

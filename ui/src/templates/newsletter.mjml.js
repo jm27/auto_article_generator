@@ -1,4 +1,4 @@
-<mjml>
+export default `<mjml>
   <mj-head>
     <mj-style inline="inline">
       @media only screen and (max-width: 480px) {
@@ -161,4 +161,4 @@
         ></mj-image>
       </mj-column>
   </mj-body>
-</mjml>
+</mjml>`
