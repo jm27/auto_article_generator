@@ -14,9 +14,7 @@ export default defineConfig({
     webAnalytics: {
       enabled: true,
     },
-    maxDuration: 60,
-    includeFiles: ['templates/newsletter.mjml'] // include the MJML template
-  }),
+    maxDuration: 60  }),
   vite: {
     plugins: [tailwindcss()],
   },
