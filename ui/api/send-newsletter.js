@@ -24,9 +24,27 @@ export default async function handler(req, res) {
   console.log(
     `[Newsletter] Users tag preferences: ${users[0].tag_preferences.join(", ")}`
   );
+
+  // Log all folders in root and their subfolders
+  const rootFiles = await fs.readdir(process.cwd(), { withFileTypes: true });
+  const rootFolders = rootFiles.filter((dirent) => dirent.isDirectory());
   console.log(
-    `[Newsletter] files in root: ${await fs.readdir(process.cwd())}`
-  )
+    `[Newsletter] folders in root: ${rootFolders.map((f) => f.name).join(", ")}`
+  );
+  for (const folder of rootFolders) {
+    const subFiles = await fs.readdir(
+      path.join(process.cwd(), folder.name),
+      { withFileTypes: true }
+    );
+    const subFolders = subFiles.filter((dirent) => dirent.isDirectory());
+    if (subFolders.length > 0) {
+      console.log(
+        `[Newsletter] subfolders in ${folder.name}: ${subFolders.map((f) =>
+          path.join(folder.name, f.name)
+        )}`
+      );
+    }
+  }
 
   const { data: posts, error: postsError } = await supabase
     .from("posts")
@@ -49,7 +67,10 @@ export default async function handler(req, res) {
   let sentCount = 0;
   let skippedCount = 0;
   let failedCount = 0;
-  const mjmlTemplate = await fs.readFile(path.resolve("templates/newsletter.mjml"), "utf8");
+  const mjmlTemplate = await fs.readFile(
+    path.resolve("templates/newsletter.mjml"),
+    "utf8"
+  );
   const template = Handlebars.compile(mjmlTemplate);
 
   for (const user of users) {
