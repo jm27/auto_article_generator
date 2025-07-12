@@ -46,11 +46,12 @@ export default async function handler(req, res) {
   let sentCount = 0;
   let skippedCount = 0;
   let failedCount = 0;
-
-  const mjmlTemplate = await fs.readFile(
-    path.join(process.cwd(), "templates/newsletter.mjml"),
-    "utf-8"
-  );
+  const templatePath = path.join(process.cwd(), 'templates', 'newsletter.mjml');
+  const mjmlTemplate = await fs.readFile(templatePath, 'utf8');
+  // const mjmlTemplate = await fs.readFile(
+  //   path.join(process.cwd(), "templates/newsletter.mjml"),
+  //   "utf-8"
+  // );
   const template = Handlebars.compile(mjmlTemplate);
 
   for (const user of users) {

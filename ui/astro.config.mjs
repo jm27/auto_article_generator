@@ -15,7 +15,7 @@ export default defineConfig({
       enabled: true,
     },
     maxDuration: 60,
-    includeFiles: ['templates/**'],
+    includeFiles: ['templates/newsletter.mjml'] // include the MJML template
   }),
   vite: {
     plugins: [tailwindcss()],
