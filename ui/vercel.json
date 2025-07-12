@@ -12,7 +12,7 @@
   ],
   "functions": {
     "api/send-newsletter.js": {
-      "includeFiles": "**/*.mjml"
+      "includeFiles": "src/templates/newsletter.mjml"
     }
   }
 }
