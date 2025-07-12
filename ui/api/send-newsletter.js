@@ -68,7 +68,7 @@ export default async function handler(req, res) {
   let skippedCount = 0;
   let failedCount = 0;
   const mjmlTemplate = await fs.readFile(
-    path.resolve("templates/newsletter.mjml"),
+    path.resolve("ui/templates/newsletter.mjml"),
     "utf8"
   );
   const template = Handlebars.compile(mjmlTemplate);
