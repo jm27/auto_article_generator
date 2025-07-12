@@ -7,7 +7,7 @@
     },
     {
       "path": "/api/send-newsletter",
-      "schedule": "45 1 * * *"
+      "schedule": "25 20 * * *"
     }
   ]
 }
