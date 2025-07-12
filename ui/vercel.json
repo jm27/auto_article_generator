@@ -9,10 +9,5 @@
       "path": "/api/send-newsletter",
       "schedule": "45 1 * * *"
     }
-  ],
-    "functions": {
-    "api/send-newsletter.js": {
-      "includeFiles": "templates/newsletter.mjml"
-    }
-  }
+  ]
 }

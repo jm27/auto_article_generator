@@ -15,6 +15,7 @@ export default defineConfig({
       enabled: true,
     },
     maxDuration: 60,
+    includeFiles: ['templates/**'],
   }),
   vite: {
     plugins: [tailwindcss()],
