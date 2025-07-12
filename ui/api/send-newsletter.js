@@ -24,6 +24,9 @@ export default async function handler(req, res) {
   console.log(
     `[Newsletter] Users tag preferences: ${users[0].tag_preferences.join(", ")}`
   );
+  console.log(
+    `[Newsletter] files in root: ${await fs.readdir(process.cwd())}`
+  )
 
   const { data: posts, error: postsError } = await supabase
     .from("posts")
