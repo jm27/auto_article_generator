@@ -17,5 +17,6 @@ export default defineConfig({
     maxDuration: 60  }),
   vite: {
     plugins: [tailwindcss()],
+    assetsInclude: ['**/*.mjml'],
   },
 });

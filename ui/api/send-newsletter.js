@@ -4,8 +4,6 @@ import Handlebars from "handlebars";
 import { supabase } from "./helpers/supabaseClient.js";
 import mjml2html from "mjml";
 import { Resend } from "resend";
-import mjmlTemplate from './templates/newsletter.mjml';
-
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
@@ -25,26 +23,7 @@ export default async function handler(req, res) {
     `[Newsletter] Users tag preferences: ${users[0].tag_preferences.join(", ")}`
   );
 
-  // Log all folders in root and their subfolders
-  const rootFiles = await fs.readdir(process.cwd(), { withFileTypes: true });
-  const rootFolders = rootFiles.filter((dirent) => dirent.isDirectory());
-  console.log(
-    `[Newsletter] folders in root: ${rootFolders.map((f) => f.name).join(", ")}`
-  );
-  for (const folder of rootFolders) {
-    const subFiles = await fs.readdir(
-      path.join(process.cwd(), folder.name),
-      { withFileTypes: true }
-    );
-    const subFolders = subFiles.filter((dirent) => dirent.isDirectory());
-    if (subFolders.length > 0) {
-      console.log(
-        `[Newsletter] subfolders in ${folder.name}: ${subFolders.map((f) =>
-          path.join(folder.name, f.name)
-        )}`
-      );
-    }
-  }
+  const mjmlTemplate = await fs.readFile(path.resolve("api/templates/newsletter.mjml"), "utf8");
 
   const { data: posts, error: postsError } = await supabase
     .from("posts")
