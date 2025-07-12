@@ -4,7 +4,6 @@ import Handlebars from "handlebars";
 import { supabase } from "./helpers/supabaseClient.js";
 import mjml2html from "mjml";
 import { Resend } from "resend";
-import { link } from "fs";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -68,7 +67,7 @@ export default async function handler(req, res) {
   let skippedCount = 0;
   let failedCount = 0;
   const mjmlTemplate = await fs.readFile(
-    path.resolve("ui/templates/newsletter.mjml"),
+    path.resolve("api/templates/newsletter.mjml"),
     "utf8"
   );
   const template = Handlebars.compile(mjmlTemplate);
