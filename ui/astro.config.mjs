@@ -17,8 +17,6 @@ export default defineConfig({
     maxDuration: 60,
   }),
   vite: {
-    // @ts-ignore: Suppress type incompatibility of Tailwind Vite plugin
     plugins: [tailwindcss()],
-    assetsInclude: ['**/*.mjml'],
   },
 });
