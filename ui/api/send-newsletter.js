@@ -23,8 +23,8 @@ export default async function handler(req, res) {
     `[Newsletter] Users tag preferences: ${users[0].tag_preferences.join(", ")}`
   );
 
-  const templatePath = path.join(process.cwd(), "src", "templates", "newsletter.mjml");
-  const mjmlTemplate = await fs.readFile(templatePath, "utf8");
+  const templatePath = path.join(process.cwd(), 'templates', 'newsletter.mjml');
+  const mjmlTemplate = await fs.readFile(templatePath, 'utf8');
 
   const { data: posts, error: postsError } = await supabase
     .from("posts")

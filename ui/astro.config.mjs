@@ -11,7 +11,7 @@ export default defineConfig({
   integrations: [react()],
   output: "server",
   adapter: vercel({
-    includeFiles: ["src/templates/newsletter.mjml"],
+    includeFiles: ["templates/newsletter.mjml"],
     webAnalytics: {
       enabled: true,
     },
