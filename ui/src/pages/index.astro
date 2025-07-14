@@ -1,31 +1,37 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase/supabaseClient';
-import { getSampleMovies } from '../scripts/fetch-movies';
-import { generateAndSaveMovies } from '../scripts/generate-and-save';
 import '../styles/global.css';
+
+const { cookies, redirect } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+console.log('Access Token:', accessToken);
+console.log('Refresh Token:', refreshToken);
+
+
+const { data: users, error: usersError } = await supabase
+	.from("subscribers")
+	.select("email, tag_preferences")
+	.eq("subscription_status", true);
 
 const { data: posts, error } = await supabase
 	.from('posts')
 	.select('*')
 	.limit(10);
 
-// const result = await generateAndSaveMovies();
-// console.log("generateAndSaveMovies result:", result);
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
-	<!-- <Welcome /> -->
 	<h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Latest Posts</h1>
 	{error ? (
 		<p class="text-red-600 text-center font-semibold">Error loading posts</p>
 	) : (
 		<ul class="w-full max-w-full sm:max-w-2xl mx-auto divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4">
 			{posts.map(p => 
-			<li key={p.slug} class="py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded">
+			<li class="py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded">
 				<a href={`/posts/${p.slug}`} class="block text-base sm:text-xl font-bold text-indigo-700 hover:underline truncate">
 					{p.title}
 				</a>

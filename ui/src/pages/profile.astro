@@ -1,9 +1,41 @@
 ---
 import TagSelection from '../components/TagSelection';
+import { supabase } from '../lib/supabase/supabaseClient';
+
+  // check if cookies are there 
+  const { cookies, redirect } = Astro;
+  const accessToken = cookies.get('sb-access-token');
+  const refreshToken = cookies.get('sb-refresh-token');
+
+  if (!accessToken || !refreshToken) {
+    console.log('No access or refresh token, redirecting to signin');
+    return redirect('auth/signin');
+  }
+
+  // Check if user token is valid
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  console.log('User from supabase.auth.getUser:', user);
+  if (userError || !user) {
+    console.error('User not authenticated:', userError);
+    return redirect('auth/signin');
+  }
+
+  const { data: tags, error } = await supabase
+    .from('tags')
+    .select('*')
+    .order('name', { ascending: true });
+
+  console.log('Tags fetched:', tags);
+
+  if (error) {
+    console.error('Error fetching tags:', error);
+  }
+
+  const allTags = tags || [];
 
 ---
 
 <div class="profile-page w-full max-w-full sm:max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8 flex flex-col items-center">
   <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 mt-4 text-center tracking-tight">Profile Page</h1>
-  <TagSelection client:load />
+  <TagSelection client:load allTags={allTags} loading={false} />
 </div>

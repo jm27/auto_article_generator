@@ -1,5 +1,3 @@
-import fs from "fs/promises";
-import path from "path";
 import Handlebars from "handlebars";
 import { supabase } from "./helpers/supabaseClient.js";
 import mjml2html from "mjml";
@@ -23,9 +21,6 @@ export default async function handler(req, res) {
   console.log(
     `[Newsletter] Users tag preferences: ${users[0].tag_preferences.join(", ")}`
   );
-
-  // const templatePath = path.join(process.cwd(), 'templates', 'newsletter.mjml');
-  // const mjmlTemplate = await fs.readFile(templatePath, 'utf8');
 
   const { data: posts, error: postsError } = await supabase
     .from("posts")

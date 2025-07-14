@@ -1,49 +1,49 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase/supabaseClient";
-import { validateUserProfile } from "../lib/supabase/helpers";
-import type { Session } from "@supabase/supabase-js";
-import type { Tag } from "../components/TagSelection"; // Adjust the import path as necessary
+import axios from "axios";
+import type { Tag } from "../components/TagSelection";
+import { getCookie } from "../utils/helpers";
 
 interface ProfileFormProps {
   allTags: Tag[];
-  session: Session; // Replace 'any' with the correct session type if available
 }
 
-export default function ProfileForm({ allTags, session }: ProfileFormProps) {
+export default function ProfileForm({ allTags }: ProfileFormProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [loading, setLoading] = useState<Boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
-    if (session) {
-      // Validate user profile on session load
-      validateUserProfile(session.user.id);
-      // Fetch existing tags for the user
-      supabase
-        .from("profiles")
-        .select("tag_preferences")
-        .eq("id", session.user.id)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            console.error("Error fetching user tags:", error);
-          } else if (data && data.tag_preferences) {
-            // Parse the tag_preferences if they are stored as JSON strings
-            setSelectedTags(data.tag_preferences);
-          }
+    setAccessToken(getCookie("sb-access-token"));
+  }, []);
+
+  useEffect(() => {
+    if (accessToken) {
+      setLoading(true);
+      // Fetch existing tags for the user from the API
+      axios
+        .get("/api/profile/get-tags", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
+        .then((res) => {
+          setSelectedTags(res.data.tagPreferences || []);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching user tags:", err);
           setLoading(false);
         });
     } else {
       console.error(
-        "No session found. User must be logged in to view profile."
+        "No accessToken found. User must be logged in to view profile."
       );
       setLoading(false);
     }
-    // Cleanup function to clear selected tags on unmount
-    // This ensures that when the component is unmounted, the state is reset
     return () => {
-      setSelectedTags([]); // Clear selected tags on unmount
+      setSelectedTags([]);
     };
-  }, [session]);
+  }, [accessToken]);
 
   const toggleTag = (tag: Tag) =>
     setSelectedTags((prev) =>
@@ -53,24 +53,37 @@ export default function ProfileForm({ allTags, session }: ProfileFormProps) {
     );
 
   const saveTags = async () => {
-    if (!session) {
-      console.error("No session found. User must be logged in to save tags.");
+    if (!accessToken) {
+      console.error(
+        "No access token found. User must be logged in to save tags."
+      );
       return;
     }
     if (selectedTags.length < 2) {
       alert("Please select at least two tags before saving.");
       return;
     }
-
-    const { error } = await supabase
-      .from("profiles")
-      .upsert({ id: session.user.id, tag_preferences: selectedTags });
-
-    if (error) {
-      console.error("Error saving user tags:", error);
-    } else {
-      alert("User tags saved successfully!");
-      console.log("User tags saved successfully:", selectedTags);
+    try {
+      const res = await axios.post(
+        "/api/profile/update-tags",
+        {
+          tagPreferences: selectedTags,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        alert("User tags saved successfully!");
+        console.log("User tags saved successfully:", selectedTags);
+      } else {
+        alert("Error saving user tags: " + res.data);
+      }
+    } catch (err: any) {
+      console.error("Error saving user tags:", err);
+      alert("Error saving user tags: " + (err.response?.data || err.message));
     }
   };
 
@@ -104,7 +117,7 @@ export default function ProfileForm({ allTags, session }: ProfileFormProps) {
                     : "#000",
                 }}
               >
-                {tag.name}
+                {tag.display_name || tag.name}
               </button>
             ))}
           </div>
