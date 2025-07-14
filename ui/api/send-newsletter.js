@@ -3,12 +3,12 @@ import { supabase } from "./helpers/supabaseClient.js";
 import mjml2html from "mjml";
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
-import mjmlTemplate from '../src/templates/newsletter.mjml.js';
+import mjmlTemplate from "../src/templates/newsletter.mjml.js";
 
 export default async function handler(req, res) {
   console.log("[Newsletter] Handler started");
   const { data: users, error: usersError } = await supabase
-    .from("subscribers")
+    .from("profiles")
     .select("email, tag_preferences")
     .eq("subscription_status", true);
   if (usersError) {
@@ -48,9 +48,31 @@ export default async function handler(req, res) {
 
   for (const user of users) {
     console.log(`[Newsletter] Processing user: ${user.email}`);
-    const personalizedPosts = posts.filter((post) =>
-      post.tags.some((tag) => user.tag_preferences.includes(tag))
-    );
+    const personalizedPosts = posts.filter((post) => {
+      // Parse user tag preferences (array of JSON strings)
+      const userTags = user.tag_preferences
+        .map((t) => {
+          try {
+            return JSON.parse(t);
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
+      // Build a set of lowercased tag names and display_names
+      const userTagNames = new Set(
+        userTags.flatMap((tag) => [
+          tag.name?.toLowerCase(),
+          tag.display_name?.toLowerCase(),
+        ])
+      );
+      // Check if any post tag matches user tag names
+      return post.tags.some(
+        (tag) =>
+          userTagNames.has(tag?.toLowerCase?.()) ||
+          userTagNames.has(tag.display_name?.toLowerCase?.())
+      );
+    });
     console.log(
       `[Newsletter] Matched ${personalizedPosts.length} personalized posts for user: ${user.email}`
     );
