@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase/supabaseClient';
 import '../styles/global.css';
 
-const { cookies, redirect } = Astro;
+const { cookies } = Astro;
 
 const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
@@ -11,11 +11,6 @@ const refreshToken = cookies.get("sb-refresh-token");
 console.log('Access Token:', accessToken);
 console.log('Refresh Token:', refreshToken);
 
-
-const { data: users, error: usersError } = await supabase
-	.from("subscribers")
-	.select("email, tag_preferences")
-	.eq("subscription_status", true);
 
 const { data: posts, error } = await supabase
 	.from('posts')

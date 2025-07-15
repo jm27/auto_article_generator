@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabase/supabaseClient";
-import { validateSubscriber } from "../lib/supabase/helpers";
 
 export default function SubscribeForm() {
   const [email, setEmail] = useState<string>("");

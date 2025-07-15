@@ -1,8 +1,18 @@
 ---
 import AuthWidget from "../components/AuthWidget";
 import SubscribeForm from "../components/SubscribeForm";
+import { isAccessTokenValid, getUserNameFromToken } from "../utils/helpers";
 const { title = "" } = Astro.props;
 
+const { cookies } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const tokenValue = accessToken?.value || "";
+const isTokenValid = await isAccessTokenValid(tokenValue);
+const userName = await getUserNameFromToken(tokenValue);
+
+console.log("Layout isTokenValid:", isTokenValid);
+console.log("Layout userName:", userName);
 ---
 
 <!doctype html>
@@ -16,10 +26,14 @@ const { title = "" } = Astro.props;
 	</head>
 	<body class="bg-gray-50 min-h-screen flex flex-col">
 		<header class="bg-white shadow-md py-4 px-2 sm:py-6 sm:px-4 flex flex-col items-center border-b border-gray-200 w-full">
-			<h2 class="text-2xl sm:text-3xl font-extrabold text-indigo-700 tracking-tight mb-2 text-center">My Daily Feed {title ? `- ${title}` : ""}</h2>
+			<a href="/" class="block w-fit mx-auto">
+			<h2 class="text-2xl sm:text-3xl font-extrabold text-indigo-700 tracking-tight mb-2 text-center hover:underline cursor-pointer">
+				My Daily Feed {title ? `- ${title}` : ""}
+			</h2>
+			</a>
 			<h3 class="text-lg sm:text-xl text-gray-700 mb-4 text-center">Your personalized news and updates</h3>
 			<!-- client:load ensures React Hydrates only on the client -->
-			<!-- <AuthWidget client:load /> -->
+			<AuthWidget client:load isTokenValid={isTokenValid} userName={userName} />
 		</header>
 		<main class="flex-1 w-full max-w-full sm:max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
 			<slot />

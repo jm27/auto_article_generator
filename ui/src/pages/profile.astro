@@ -1,23 +1,20 @@
 ---
 import TagSelection from '../components/TagSelection';
+import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase/supabaseClient';
+import { isAccessTokenValid } from '../utils/helpers';
 
   // check if cookies are there 
   const { cookies, redirect } = Astro;
   const accessToken = cookies.get('sb-access-token');
-  const refreshToken = cookies.get('sb-refresh-token');
+  const tokenValue = accessToken?.value;
+  const isTokenValid = await isAccessTokenValid(tokenValue);
 
-  if (!accessToken || !refreshToken) {
-    console.log('No access or refresh token, redirecting to signin');
+  if (!isTokenValid) {
+    console.log('Token is not valid, redirecting to signin page');
     return redirect('auth/signin');
-  }
-
-  // Check if user token is valid
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  console.log('User from supabase.auth.getUser:', user);
-  if (userError || !user) {
-    console.error('User not authenticated:', userError);
-    return redirect('auth/signin');
+  } else {
+    console.log('Token is valid, proceeding to fetch tags');
   }
 
   const { data: tags, error } = await supabase
@@ -34,8 +31,9 @@ import { supabase } from '../lib/supabase/supabaseClient';
   const allTags = tags || [];
 
 ---
-
-<div class="profile-page w-full max-w-full sm:max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8 flex flex-col items-center">
-  <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 mt-4 text-center tracking-tight">Profile Page</h1>
-  <TagSelection client:load allTags={allTags} loading={false} />
-</div>
+<Layout>
+  <div class="w-full max-w-full sm:max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8 flex flex-col items-center rounded-lg bg-white shadow">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 mt-4 text-center tracking-tight">Profile Page</h1>
+    <TagSelection client:load allTags={allTags} loading={false} />
+  </div>
+</Layout>

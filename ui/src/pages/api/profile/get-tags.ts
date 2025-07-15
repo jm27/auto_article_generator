@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabase/supabaseClient";
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, redirect }) => {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader) {
     return new Response("Unauthorized", { status: 401 });
@@ -17,10 +17,7 @@ export const GET: APIRoute = async ({ request }) => {
   console.log("user data:", data);
 
   if (getUserError || !data?.user) {
-    return new Response(
-      `Unauthorized: ${getUserError?.message || "Unknown error"}`,
-      { status: 401 }
-    );
+    return redirect("/auth/signin");
   }
 
   const { data: profileData, error } = await supabase

@@ -1,14 +1,18 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import '../../styles/global.css';
+import { isAccessTokenValid } from '../../utils/helpers';
 export const prerender = false;
 
 const { cookies, redirect } = Astro;
-const accessToken = cookies.get('sb-access-token');
-const refreshToken = cookies.get('sb-refresh-token');
+const accessTokenCookie = cookies.get('sb-access-token');
+const accessToken = accessTokenCookie?.value;
+const isTokenValid = await isAccessTokenValid(accessToken);
 
-if (accessToken && refreshToken) {
-  return redirect('/index');
+console.log('Access Token:', accessToken);
+console.log('Is Token Valid:', isTokenValid);
+if (isTokenValid) {
+  return redirect('/');
 }
 ---
 
