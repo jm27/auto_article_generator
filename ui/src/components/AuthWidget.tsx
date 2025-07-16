@@ -11,7 +11,7 @@ export default function AuthWidget(props: AuthWidgetProps) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setShowProfileButton(window.location.pathname !== "/profile");
+      setShowProfileButton(window.location.pathname !== "auth/profile");
     }
   }, []);
 
@@ -29,7 +29,7 @@ export default function AuthWidget(props: AuthWidgetProps) {
   }
 
   function viewProfile() {
-    window.location.href = "/profile";
+    window.location.href = "/auth/profile";
   }
 
   if (!props.isTokenValid) {

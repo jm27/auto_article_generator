@@ -125,7 +125,7 @@ export default function ProfileForm({ allTags }: ProfileFormProps) {
       </div>
       <button
         onClick={saveTags}
-        className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        className="cursor-pointer w-full p-2 sm:p-3 text-base font-semibold rounded bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
         style={{ marginTop: "1rem" }}
         disabled={selectedTags.length < 2 || loading}
         title={

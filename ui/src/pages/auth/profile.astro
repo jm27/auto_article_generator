@@ -1,8 +1,8 @@
 ---
-import TagSelection from '../components/TagSelection';
-import Layout from '../layouts/Layout.astro';
-import { supabase } from '../lib/supabase/supabaseClient';
-import { isAccessTokenValid } from '../utils/helpers';
+import TagSelection from '../../components/TagSelection';
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase/supabaseClient';
+import { isAccessTokenValid } from '../../utils/helpers';
 
   // check if cookies are there 
   const { cookies, redirect } = Astro;
@@ -12,7 +12,7 @@ import { isAccessTokenValid } from '../utils/helpers';
 
   if (!isTokenValid) {
     console.log('Token is not valid, redirecting to signin page');
-    return redirect('auth/signin');
+    return redirect('/auth/signin');
   } else {
     console.log('Token is valid, proceeding to fetch tags');
   }

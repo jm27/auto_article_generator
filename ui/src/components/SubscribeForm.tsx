@@ -1,17 +1,38 @@
+import axios from "axios";
 import { useState } from "react";
 
 export default function SubscribeForm() {
   const [email, setEmail] = useState<string>("");
+  const [agreeToTerms, setAgreeToTerms] = useState<boolean>(false);
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">(
     "idle"
   );
 
-  const subscribe = async (e: React.FormEvent<HTMLFormElement>) => {
+  const subscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
+
     try {
-      await validateSubscriber(email.toLowerCase());
-      setStatus("sent");
+      // Send as form data so the API receives application/x-www-form-urlencoded
+      const formData = new URLSearchParams();
+      formData.append("email", email);
+      formData.append("agree_to_terms", agreeToTerms ? "true" : "");
+
+      const response = await axios.post("/api/auth/subscribe", formData, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        validateStatus: () => true, // allow handling 303 manually
+      });
+
+      if (response.status === 200 && response.headers.location) {
+        window.location.href = response.headers.location;
+        return;
+      }
+
+      if (response.status !== 200) {
+        throw new Error("Subscription failed");
+      }
     } catch (error) {
       console.error("Subscription error:", error);
       setStatus("error");
@@ -31,6 +52,16 @@ export default function SubscribeForm() {
         required
         className="w-full p-2 sm:p-3 text-base rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
+      <label className="flex items-center">
+        <input
+          type="checkbox"
+          checked={agreeToTerms}
+          onChange={(e) => setAgreeToTerms(e.target.checked)}
+          required
+          className="mr-2"
+        />
+        I agree to the terms and conditions...
+      </label>
       <button
         type="submit"
         disabled={status === "loading"}
