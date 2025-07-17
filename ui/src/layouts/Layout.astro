@@ -1,7 +1,7 @@
 ---
 import AuthWidget from "../components/AuthWidget";
 import SubscribeForm from "../components/SubscribeForm";
-import { isAccessTokenValid, getUserNameFromToken } from "../utils/helpers";
+import { isAccessTokenValid, getUserEmailFromToken } from "../utils/helpers";
 const { title = "" } = Astro.props;
 
 const { cookies } = Astro;
@@ -9,7 +9,7 @@ const { cookies } = Astro;
 const accessToken = cookies.get("sb-access-token");
 const tokenValue = accessToken?.value || "";
 const isTokenValid = await isAccessTokenValid(tokenValue);
-const userName = await getUserNameFromToken(tokenValue);
+const userName = await getUserEmailFromToken(tokenValue);
 
 console.log("Layout isTokenValid:", isTokenValid);
 console.log("Layout userName:", userName);

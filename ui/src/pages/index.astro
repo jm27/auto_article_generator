@@ -1,7 +1,9 @@
 ---
+import { late } from 'astro:schema';
 import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase/supabaseClient';
 import '../styles/global.css';
+import { fetchUserTagsByEmail, getUserEmailFromToken, fetchLatestPostsByUserTags } from '../utils/helpers';
 
 const { cookies } = Astro;
 
@@ -12,26 +14,69 @@ console.log('Access Token:', accessToken);
 console.log('Refresh Token:', refreshToken);
 
 
+const userEmail = await getUserEmailFromToken(accessToken?.value || "");
+const user_tags = userEmail ? await fetchUserTagsByEmail(userEmail, supabase) : [];
+const latest_user_posts = user_tags?.length
+  ? await fetchLatestPostsByUserTags(user_tags, supabase)
+  : [];
+
+
 const { data: posts, error } = await supabase
 	.from('posts')
 	.select('*')
-	.limit(10);
+	.limit(10)
+	.order('published_at', { ascending: false });
 
 ---
 
 <Layout>
-	<h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Latest Posts</h1>
+ { userEmail && (
+  <>
+	<h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Your Feed</h1>
 	{error ? (
-		<p class="text-red-600 text-center font-semibold">Error loading posts</p>
+	  <p class="text-red-600 text-center font-semibold">Error loading posts</p>
 	) : (
-		<ul class="w-full max-w-full sm:max-w-2xl mx-auto divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4">
-			{posts.map(p => 
-			<li class="py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded">
-				<a href={`/posts/${p.slug}`} class="block text-base sm:text-xl font-bold text-indigo-700 hover:underline truncate">
-					{p.title}
-				</a>
-			</li>
-			)}
-		</ul>
+	  <ul class="w-full max-w-full sm:max-w-2xl mx-auto divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4">
+		{latest_user_posts.map(p => (
+		  <li>
+			<a href={`/posts/${p.slug}`} class="flex items-start gap-4 py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded group no-underline">
+			  {p.images?.[0] && (
+				<img src={p.images[0]} alt={p.title} class="w-16 h-16 object-cover rounded-md border border-gray-200" loading="lazy" />
+			  )}
+			  <div class="flex-1 min-w-0">
+				<span class="block text-base sm:text-xl font-bold text-indigo-700 group-hover:underline truncate">
+				  {p.title}
+				</span>
+				<p class="text-gray-600 text-sm mt-1 line-clamp-2">{p.content?.slice(0, 120)}{p.content?.length > 120 ? '...' : ''}</p>
+			  </div>
+			</a>
+		  </li>
+		))}
+	  </ul>
 	)}
+  </>
+ ) }
+
+  <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Latest Posts</h1>
+  {error ? (
+	<p class="text-red-600 text-center font-semibold">Error loading posts</p>
+  ) : (
+	<ul class="w-full max-w-full sm:max-w-2xl mx-auto divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4">
+	  {posts.map(p => (
+		<li>
+		  <a href={`/posts/${p.slug}`} class="flex items-start gap-4 py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded group no-underline">
+			{p.images?.[0] && (
+			  <img src={p.images[0]} alt={p.title} class="w-16 h-16 object-cover rounded-md border border-gray-200" loading="lazy" />
+			)}
+			<div class="flex-1 min-w-0">
+			  <span class="block text-base sm:text-xl font-bold text-indigo-700 group-hover:underline truncate">
+				{p.title}
+			  </span>
+			  <p class="text-gray-600 text-sm mt-1 line-clamp-2">{p.content?.slice(0, 120)}{p.content?.length > 120 ? '...' : ''}</p>
+			</div>
+		  </a>
+		</li>
+	  ))}
+	</ul>
+  )}
 </Layout>

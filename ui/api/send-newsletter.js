@@ -180,7 +180,7 @@ export default async function handler(req, res) {
     }
     try {
       await resend.emails.send({
-        from: "My Daily Feed <noreply@mydailyf.com>",
+        from: "My Daily Feed <my_daily_feed@mydailyf.com>",
         to: user.email,
         subject: "Your Personalized Newsletter",
         html: html,
