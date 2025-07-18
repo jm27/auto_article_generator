@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabase/supabaseClient";
+import { v4 as uuidv4 } from "uuid";
+
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, redirect }) => {
@@ -15,6 +17,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const { error: signUpError } = await supabase.from("subscribers").upsert({
     email,
     subscription_status: agreeToTerms,
+    unsubscribe_token: uuidv4(),
   });
 
   if (signUpError) {

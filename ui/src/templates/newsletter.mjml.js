@@ -118,6 +118,20 @@ export default `<mjml>
         >
       </mj-column>
     </mj-section>
+
+    {{#if isUserSubscriber}}
+    <!-- Unsubscribe Section -->
+    <mj-section background-color="#fff">
+      <mj-column width="400px">
+        <mj-button background-color="#e53e3e" color="#fff" href="{{ unsubscribeURL }}" font-size="14px" border-radius="20px" padding="16px 0 0 0">
+          Unsubscribe
+        </mj-button>
+        <mj-text font-size="12px" color="#888" align="center" padding="8px 0 0 0">
+          If you no longer wish to receive these emails, you can unsubscribe at any time.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    {{/if}}
     <mj-raw> <!-- Side image and text --> </mj-raw>
     <mj-section background-color="white">
       <mj-column>
@@ -161,4 +175,4 @@ export default `<mjml>
         ></mj-image>
       </mj-column>
   </mj-body>
-</mjml>`
+</mjml>`;

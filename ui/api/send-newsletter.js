@@ -165,6 +165,10 @@ export default async function handler(req, res) {
         poster: post.images?.[0] || "",
       })),
       link: `https://mydailyf.com`,
+      isUserSubscriber: !user.isProfile,
+      unsubscribeURL: user.isProfile
+        ? null
+        : `https://mydailyf.com/api/auth/unsubscribe/email=${user.email}&unsubscribe_token=${user.unsubscribe_token}`,
       summary,
     });
     const { html, errors: mjmlErrors } = mjml2html(htmOutput);
