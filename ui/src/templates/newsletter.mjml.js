@@ -43,9 +43,18 @@ export default `<mjml>
           font-family="Helvetica Neue"
           >{{ title }}</mj-text
         >
-        <mj-button background-color="#007bff" href="{{ link }}"
-          >Read More</mj-button
-        >
+        <mj-button
+          background-color="#007bff"
+          color="#ffffff"
+          href="{{ link }}"
+          font-size="15px"
+          font-weight="600"
+          border-radius="24px"
+          padding="18px 32px 0 32px"
+          align="center"
+          inner-padding="12px 12px"
+          line-height="1.2"
+        >Read More</mj-button>
       </mj-column>
     </mj-section>
     <mj-raw> <!-- Intro text --> </mj-raw>
@@ -106,16 +115,24 @@ export default `<mjml>
           align="center"
           inner-padding="12px 12px"
           line-height="1.2"
-          >Read More</mj-button
-        >
+        >Read More</mj-button>
       </mj-column>
     </mj-section>
     {{/each}}
     <mj-section background-color="#fafafa">
       <mj-column width="400px">
-        <mj-button background-color="#F45E43" href="{{ link }}"
-          >Learn more</mj-button
-        >
+        <mj-button
+          background-color="#F45E43"
+          color="#ffffff"
+          href="{{ link }}"
+          font-size="15px"
+          font-weight="600"
+          border-radius="24px"
+          padding="18px 32px 0 32px"
+          align="center"
+          inner-padding="12px 12px"
+          line-height="1.2"
+        >Learn more</mj-button>
       </mj-column>
     </mj-section>
 
@@ -123,9 +140,18 @@ export default `<mjml>
     <!-- Unsubscribe Section -->
     <mj-section background-color="#fff">
       <mj-column width="400px">
-        <mj-button background-color="#e53e3e" color="#fff" href="{{ unsubscribeURL }}" font-size="14px" border-radius="20px" padding="16px 0 0 0">
-          Unsubscribe
-        </mj-button>
+        <mj-button
+          background-color="#e53e3e"
+          color="#ffffff"
+          href="{{ unsubscribeURL }}"
+          font-size="15px"
+          font-weight="600"
+          border-radius="24px"
+          padding="18px 32px 0 32px"
+          align="center"
+          inner-padding="12px 12px"
+          line-height="1.2"
+        >Unsubscribe</mj-button>
         <mj-text font-size="12px" color="#888" align="center" padding="8px 0 0 0">
           If you no longer wish to receive these emails, you can unsubscribe at any time.
         </mj-text>

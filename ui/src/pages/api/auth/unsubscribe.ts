@@ -23,7 +23,7 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   console.log(`[Unsubscribe] Looking up user in subscribers table`);
   const { data: user, error: userError } = await supabase
     .from("subscribers")
-    .select("id")
+    .select("email")
     .eq("email", email)
     .eq("unsubscribe_token", unsubscribeToken)
     .single();
@@ -40,11 +40,12 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   }
 
   // Unsubscribe the user
-  console.log(`[Unsubscribe] Unsubscribing user with id: ${user.id}`);
+  console.log(`[Unsubscribe] Unsubscribing user with email: ${user.email}`);
   const { error: unsubscribeError } = await supabase
     .from("subscribers")
     .update({ subscription_status: false })
-    .eq("id", user.id);
+    .eq("email", email)
+    .eq("unsubscribe_token", unsubscribeToken);
 
   if (unsubscribeError) {
     console.error("[Unsubscribe] Unsubscribe error:", unsubscribeError);
@@ -52,6 +53,6 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   }
 
   console.log(`[Unsubscribe] Successfully unsubscribed user: ${email}`);
-  return redirect("/auth/unsubscribed");
+  return redirect("/unsubscribed");
   // return new Response("Successfully unsubscribed", { status: 200 });
 };

@@ -168,7 +168,7 @@ export default async function handler(req, res) {
       isUserSubscriber: !user.isProfile,
       unsubscribeURL: user.isProfile
         ? null
-        : `https://mydailyf.com/api/auth/unsubscribe/email=${user.email}&unsubscribe_token=${user.unsubscribe_token}`,
+        : `https://mydailyf.com/api/auth/unsubscribe?email=${user.email}&unsubscribe_token=${user.unsubscribe_token}`,
       summary,
     });
     const { html, errors: mjmlErrors } = mjml2html(htmOutput);
