@@ -10,7 +10,8 @@ export default async function handler(req, res) {
 
   const payload = req.body;
   const { type, data } = payload;
-  const { broadcast_id } = data || {};
+  // For click events, use email_id as the broadcast identifier
+  const broadcast_id = data?.email_id;
 
   console.log(`[Resend Webhook] Received type: ${type}, data:`, data);
   console.log(`[Resend Webhook] Headers: `, req.headers);
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
     return res.status(400).send("Payload is too old");
   }
 
-  // find log entry by broadcast_id
+  // find log entry by broadcast_id (email_id in this payload)
   const { data: logEntry, error: logError } = await supabase
     .from("newsletter_log")
     .select("*")
@@ -49,9 +50,11 @@ export default async function handler(req, res) {
     `[Resend Webhook] Found log entry for broadcast_id: ${broadcast_id}`,
     logEntry
   );
+  // Store the full event data (e.g., click info) if present
   await supabase.from("newsletter_events").insert({
     newsletter_log_id: logEntry.id,
-    event_type: type.replace("resend.", ""),
+    event_type: type.replace("email.", ""),
+    // event_data: data.click || data,
     created_at: new Date().toISOString(),
   });
   console.log(
