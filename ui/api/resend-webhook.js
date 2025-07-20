@@ -1,13 +1,15 @@
 import { supabase } from "./helpers/supabaseClient.js";
+import { Webhook } from "svix";
 
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
-const TOLERANCE = 300; // 5 minutes in seconds
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
 
+  // Get raw payload as string for signature verification
+  const rawPayload = JSON.stringify(req.body);
   const payload = req.body;
   const { type, data } = payload;
   // For click events, use email_id as the broadcast identifier
@@ -16,18 +18,23 @@ export default async function handler(req, res) {
   console.log(`[Resend Webhook] Received type: ${type}, data:`, data);
   console.log(`[Resend Webhook] Headers: `, req.headers);
 
-  // Validate the webhook secret
-  const signature = req.headers["x-resend-signature"];
-  if (!signature || signature !== RESEND_WEBHOOK_SECRET) {
-    console.error("[Resend Webhook] Invalid signature");
-    return res.status(401).send("Invalid signature");
-  }
+  // Verify webhook signature using Svix
+  const headers = {
+    "svix-id": req.headers["svix-id"],
+    "svix-timestamp": req.headers["svix-timestamp"],
+    "svix-signature": req.headers["svix-signature"],
+  };
 
-  // Reject old payloads
-  const timestamp = parseInt(req.headers["x-resend-timestamp"] || "0", 10);
-  if (isNaN(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > TOLERANCE) {
-    console.error("[Resend Webhook] Payload is too old");
-    return res.status(400).send("Payload is too old");
+  try {
+    const wh = new Webhook(RESEND_WEBHOOK_SECRET);
+    wh.verify(rawPayload, headers);
+    console.log("[Resend Webhook] Signature verified successfully");
+  } catch (err) {
+    console.error(
+      "[Resend Webhook] Webhook signature verification failed:",
+      err
+    );
+    return res.status(401).send("Webhook signature verification failed");
   }
 
   // find log entry by broadcast_id (email_id in this payload)
