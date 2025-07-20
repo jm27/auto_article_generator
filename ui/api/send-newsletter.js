@@ -72,7 +72,7 @@ export default async function handler(req, res) {
   console.log("[Newsletter] Fetching posts from posts table");
   const { data: posts, error: postsError } = await supabase
     .from("posts")
-    .select("title, content, slug, tags, images, published_at")
+    .select("id, title, content, slug, tags, images, published_at")
     .gt("published_at", sevenDaysAgo);
 
   if (postsError) {
@@ -183,14 +183,37 @@ export default async function handler(req, res) {
       console.log(`[Newsletter] MJML rendered successfully for ${user.email}`);
     }
     try {
-      await resend.emails.send({
+      const now = new Date();
+      const formattedDate = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+      const subject = `Your Personalized Newsletter for ${formattedDate}`;
+      const { data: respData } = await resend.emails.send({
         from: "My Daily Feed <my_daily_feed@mydailyf.com>",
         to: user.email,
-        subject: "Your Personalized Newsletter",
+        subject: subject,
         html: html,
       });
       sentCount++;
       console.log(`[Newsletter] Email sent to: ${user.email}`);
+
+      // capture in newsletter_log table
+      const { error: logError } = await supabase.from("newsletter_log").insert({
+        user_email: user.email,
+        subject_line: subject,
+        sent_date: new Date().toISOString(),
+        recipient_count: sentCount,
+        broadcast_id: respData.id,
+        content_ids: postsToSend.map((post) => post.id),
+      });
+      if (logError) {
+        console.error(
+          `[Newsletter] Failed to log email for ${user.email} broadcast ID: ${respData.id}:`,
+          logError
+        );
+      } else {
+        console.log(
+          `[Newsletter] Logged email for ${user.email} broadcast ID: ${respData.id}`
+        );
+      }
     } catch (err) {
       failedCount++;
       console.error(`[Newsletter] Failed to send email to ${user.email}:`, err);
