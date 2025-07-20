@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase/supabaseClient.js";
+import { supabase } from "./helpers/supabaseClient.js";
 
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
 const TOLERANCE = 300; // 5 minutes in seconds
