@@ -4,6 +4,7 @@ import mjml2html from "mjml";
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 import mjmlTemplate from "../src/templates/newsletter.mjml.js";
+import { convert } from "html-to-text";
 
 export default async function handler(req, res) {
   console.log("[Newsletter] Handler started");
@@ -172,6 +173,13 @@ export default async function handler(req, res) {
       summary,
     });
     const { html, errors: mjmlErrors } = mjml2html(htmOutput);
+    const text = convert(html, {
+      wordwrap: 80,
+      ignoreImage: true,
+      ignoreHref: true,
+      ignoreStyle: true,
+      format: "text",
+    });
     if (mjmlErrors && mjmlErrors.length > 0) {
       console.error(
         `[Newsletter] MJML errors for user ${user.email}:`,
@@ -191,6 +199,7 @@ export default async function handler(req, res) {
         to: user.email,
         subject: subject,
         html: html,
+        text: text, // include the plain‑text fallback
       });
       sentCount++;
       console.log(`[Newsletter] Email sent to: ${user.email}`);
