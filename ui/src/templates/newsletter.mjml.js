@@ -21,7 +21,7 @@ export default `<mjml>
           color="#22223b"
           align="center"
           padding="28px 0 10px 0"
-          font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
           letter-spacing="0.5px"
           line-height="1.1"
           text-transform="none"
@@ -31,7 +31,7 @@ export default `<mjml>
     </mj-section>
     <mj-raw> <!-- Image Header --> </mj-raw>
     <mj-section
-      background-url="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
+      background-url="https://mydailyf.com/api/image-proxy?imgUrl=https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
       background-size="cover"
       background-repeat="no-repeat"
     >
@@ -40,7 +40,7 @@ export default `<mjml>
           align="center"
           color="#fff"
           font-size="36px"
-          font-family="Helvetica Neue"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
           >{{ title }}</mj-text
         >
         <mj-button
@@ -63,7 +63,7 @@ export default `<mjml>
         <mj-text
           font-style="italic"
           font-size="20px"
-          font-family="Helvetica Neue"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
           color="#626262"
           >{{ summary }}</mj-text
         >
@@ -88,7 +88,7 @@ export default `<mjml>
           font-size="20px"
           font-weight="bold"
           color="#1a237e"
-          font-family="'Helvetica Neue', Arial, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
           letter-spacing="0.5px"
           align="center"
           padding="0 0 12px 0"
@@ -97,7 +97,7 @@ export default `<mjml>
         <mj-text
           font-size="15px"
           color="#444"
-          font-family="'Helvetica Neue',Arial,sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
           padding="0 0 20px 0"
           line-height="1.6"
           letter-spacing="0.1px"
@@ -163,18 +163,20 @@ export default `<mjml>
       <mj-column>
         <mj-image
           width="200px"
-          src="https://designspell.files.wordpress.com/2012/01/sciolino-paris-bw.jpg"
+          src="https://mydailyf.com/api/image-proxy?imgUrl=https://designspell.files.wordpress.com/2012/01/sciolino-paris-bw.jpg"
         ></mj-image>
       </mj-column>
       <mj-column>
         <mj-text
           font-style="italic"
           font-size="20px"
-          font-family="Helvetica Neue"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
           color="#626262"
           >Discover more</mj-text
         >
-        <mj-text color="#525252"
+        <mj-text 
+          color="#525252"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
           >Stay tuned for more curated content and stories every day from My
           Daily Feed.</mj-text
         >
@@ -185,19 +187,19 @@ export default `<mjml>
       <mj-column>
         <mj-image
           width="100px"
-          src="http://191n.mj.am/img/191n/3s/x0l.png"
+          src="https://mydailyf.com/api/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x0l.png"
         ></mj-image>
       </mj-column>
       <mj-column>
         <mj-image
           width="100px"
-          src="http://191n.mj.am/img/191n/3s/x01.png"
+          src="https://mydailyf.com/api/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x01.png"
         ></mj-image>
       </mj-column>
       <mj-column>
         <mj-image
           width="100px"
-          src="http://191n.mj.am/img/191n/3s/x0s.png"
+          src="https://mydailyf.com/api/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x0s.png"
         ></mj-image>
       </mj-column>
   </mj-body>
