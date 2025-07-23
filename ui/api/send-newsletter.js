@@ -163,7 +163,7 @@ export default async function handler(req, res) {
         title: post.title,
         summary: `${post.content.slice(0, 150)}... ` || "No summary available",
         slug: post.slug,
-        poster: post.images?.[0] || "",
+        poster: `https://yourdomain.com/api/image-proxy?url=${post.images?.[0] || ""}`,
       })),
       link: `https://mydailyf.com`,
       isUserSubscriber: !user.isProfile,
