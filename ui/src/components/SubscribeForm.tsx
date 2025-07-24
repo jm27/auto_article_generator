@@ -13,20 +13,24 @@ export default function SubscribeForm() {
     setStatus("loading");
 
     try {
-      // Send as form data so the API receives application/x-www-form-urlencoded
-      const formData = new URLSearchParams();
-      formData.append("email", email);
-      formData.append("agree_to_terms", agreeToTerms ? "true" : "");
+      // Send as JSON data
+      const response = await axios.post(
+        "/api/auth/subscribe",
+        JSON.stringify({ email, agree_to_terms: agreeToTerms }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          validateStatus: () => true, // allow handling errors manually
+        }
+      );
 
-      const response = await axios.post("/api/auth/subscribe", formData, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        validateStatus: () => true, // allow handling 303 manually
-      });
-
-      if (response.status === 200 && response.headers.location) {
-        window.location.href = response.headers.location;
+      if (response.status === 200 && response.data.success) {
+        if (response.data.redirect) {
+          window.location.href = response.data.redirect;
+        } else {
+          setStatus("sent");
+        }
         return;
       }
 
