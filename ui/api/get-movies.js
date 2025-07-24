@@ -2,7 +2,7 @@ import axios from "axios";
 import {
   mapGenreIdsToName,
   fetchReviewsForMovie,
-} from "./helpers/movie-helpers.js";
+} from "../helpers/movie-helpers.js";
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { supabase } from "./helpers/supabaseClient.js";
+import { supabase } from "../helpers/supabaseClient.js";
 // import { getMovies } from "./get-movies.js";
 import { Resend } from "resend";
 

@@ -1,4 +1,4 @@
-import { supabase } from "./helpers/supabaseClient.js";
+import { supabase } from "../helpers/supabaseClient.js";
 import { Webhook } from "svix";
 
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;

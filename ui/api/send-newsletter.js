@@ -1,5 +1,5 @@
 import Handlebars from "handlebars";
-import { supabase } from "./helpers/supabaseClient.js";
+import { supabase } from "../helpers/supabaseClient.js";
 import mjml2html from "mjml";
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
