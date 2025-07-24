@@ -15,8 +15,10 @@ export default defineConfig({
     webAnalytics: {
       enabled: true,
     },
-    maxDuration: 60  }),
+    maxDuration: 60,
+    edgeMiddleware: true,
+  }),
   vite: {
-    plugins: [tailwindcss()]
-    },
+    plugins: [tailwindcss()],
+  },
 });
