@@ -1,9 +1,9 @@
-import { supabase } from "../helpers/supabaseClient.js";
+import { supabase } from "../../../helpers/supabaseClient.js";
 import { Webhook } from "svix";
 
 const RESEND_WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET;
 
-export default async function handler(req, res) {
+export async function handleResendWebhook(req, res) {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
@@ -25,6 +25,10 @@ export default async function handler(req, res) {
     "svix-signature": req.headers["svix-signature"],
   };
 
+  if (!RESEND_WEBHOOK_SECRET) {
+    console.error("[Resend Webhook] RESEND_WEBHOOK_SECRET is not set");
+    return res.status(500).send("Server configuration error");
+  }
   try {
     const wh = new Webhook(RESEND_WEBHOOK_SECRET);
     wh.verify(rawPayload, headers);
@@ -69,9 +73,3 @@ export default async function handler(req, res) {
   );
   return res.status(200).send("Webhook processed successfully");
 }
-
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};

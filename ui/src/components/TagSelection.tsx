@@ -17,11 +17,6 @@ export default function TagSelection({
   allTags: Tag[];
   loading: boolean;
 }) {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    setAccessToken(getCookie("sb-access-token"));
-  }, []);
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-white dark:bg-gray-900">

@@ -1,5 +1,8 @@
 import axios from "axios";
 import { useState } from "react";
+import { buildApiUrl } from "../utils/baseUrl";
+
+const SUBSCRIBE_URL = buildApiUrl("api/auth/subscribe");
 
 export default function SubscribeForm() {
   const [email, setEmail] = useState<string>("");
@@ -9,36 +12,65 @@ export default function SubscribeForm() {
   );
 
   const subscribe = async (e: React.FormEvent) => {
+    console.log("[SubscribeForm] Form submit event triggered");
     e.preventDefault();
+    console.log("[SubscribeForm] Default prevented");
+    console.log("[SubscribeForm] Subscribe form submitted");
+    console.log("[SubscribeForm] Email:", email);
+    console.log("[SubscribeForm] Agree to terms:", agreeToTerms);
+
     setStatus("loading");
+    console.log("[SubscribeForm] Status set to loading");
 
     try {
-      // Send as JSON data
+      console.log("[SubscribeForm] Sending request to:", SUBSCRIBE_URL);
+      // Send as JSON data - but don't stringify, axios will do it
       const response = await axios.post(
-        "/api/auth/subscribe",
-        JSON.stringify({ email, agree_to_terms: agreeToTerms }),
+        SUBSCRIBE_URL,
+        { email, agree_to_terms: agreeToTerms }, // Remove JSON.stringify
         {
           headers: {
             "Content-Type": "application/json",
           },
           validateStatus: () => true, // allow handling errors manually
+          withCredentials: true, // Add this for CORS
         }
       );
 
+      console.log("[SubscribeForm] Response received:", {
+        status: response.status,
+        data: response.data,
+      });
+
       if (response.status === 200 && response.data.success) {
+        console.log("[SubscribeForm] Subscription successful");
         if (response.data.redirect) {
+          console.log(
+            "[SubscribeForm] Redirecting to:",
+            response.data.redirect
+          );
           window.location.href = response.data.redirect;
         } else {
+          console.log("[SubscribeForm] No redirect, setting status to sent");
           setStatus("sent");
         }
         return;
       }
 
       if (response.status !== 200) {
+        console.error("[SubscribeForm] Non-200 status:", response.status);
+        console.error("[SubscribeForm] Response data:", response.data);
         throw new Error("Subscription failed");
       }
     } catch (error) {
-      console.error("Subscription error:", error);
+      console.error("[SubscribeForm] Subscription error:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("[SubscribeForm] Axios error details:", {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+        });
+      }
       setStatus("error");
     }
   };

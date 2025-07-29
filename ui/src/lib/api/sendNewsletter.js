@@ -1,12 +1,13 @@
 import Handlebars from "handlebars";
-import { supabase } from "../helpers/supabaseClient.js";
+import { supabase } from "../../../helpers/supabaseClient.js";
 import mjml2html from "mjml";
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
-import mjmlTemplate from "../src/templates/newsletter.mjml.js";
+import mjmlTemplate from "../../templates/newsletter.mjml.js";
 import { convert } from "html-to-text";
+import { getBaseUrl, buildApiUrl } from "../../utils/baseUrl.js";
 
-export default async function handler(req, res) {
+export async function handleSendNewsletter(req, res) {
   console.log("[Newsletter] Handler started");
 
   console.log(
@@ -157,28 +158,29 @@ export default async function handler(req, res) {
         `[Newsletter] Preparing to send email to ${user.email} with ${postsToSend.length} posts.`
       );
     }
+    const baseUrl = getBaseUrl();
     const htmOutput = template({
       subject: "Your Personalized Newsletter",
       content: postsToSend.map((post) => ({
         title: post.title,
         summary: `${post.content.slice(0, 150)}... ` || "No summary available",
         slug: post.slug,
-        poster: `https://mydailyf.com/api/image-proxy?imgUrl=${post.images?.[0] || ""}`,
+        poster: buildApiUrl(
+          `/api/content/image-proxy?imgUrl=${post.images?.[0] || ""}`
+        ),
       })),
-      link: `https://mydailyf.com`,
+      link: baseUrl,
       isUserSubscriber: !user.isProfile,
       unsubscribeURL: user.isProfile
         ? null
-        : `https://mydailyf.com/api/auth/unsubscribe?email=${user.email}&unsubscribe_token=${user.unsubscribe_token}`,
+        : buildApiUrl(
+            `/api/auth/unsubscribe?email=${user.email}&unsubscribe_token=${user.unsubscribe_token}`
+          ),
       summary,
     });
     const { html, errors: mjmlErrors } = mjml2html(htmOutput);
     const text = convert(html, {
       wordwrap: 80,
-      ignoreImage: true,
-      ignoreHref: true,
-      ignoreStyle: true,
-      format: "text",
     });
     if (mjmlErrors && mjmlErrors.length > 0) {
       console.error(
@@ -210,17 +212,17 @@ export default async function handler(req, res) {
         subject_line: subject,
         sent_date: new Date().toISOString(),
         recipient_count: sentCount,
-        broadcast_id: respData.id,
+        broadcast_id: respData?.id,
         content_ids: postsToSend.map((post) => post.id),
       });
       if (logError) {
         console.error(
-          `[Newsletter] Failed to log email for ${user.email} broadcast ID: ${respData.id}:`,
+          `[Newsletter] Failed to log email for ${user.email} broadcast ID: ${respData?.id}:`,
           logError
         );
       } else {
         console.log(
-          `[Newsletter] Logged email for ${user.email} broadcast ID: ${respData.id}`
+          `[Newsletter] Logged email for ${user.email} broadcast ID: ${respData?.id}`
         );
       }
     } catch (err) {

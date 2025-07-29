@@ -1,6 +1,4 @@
-import fetch from "node-fetch";
-
-export default async function handler(req, res) {
+export async function handleImageProxy(req, res) {
   console.log("[Image Proxy] Request received");
   const { imgUrl } = req.query;
   console.log(`[Image Proxy] Fetching image from: ${imgUrl}`);

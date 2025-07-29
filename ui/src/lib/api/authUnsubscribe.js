@@ -1,6 +1,6 @@
-import { supabase } from "../../helpers/supabaseClient.js";
+import { supabase } from "../../../helpers/supabaseClient.js";
 
-export default async function handler(req, res) {
+export async function handleUnsubscribe(req, res) {
   if (req.method !== "GET") {
     return res.status(405).send("Method Not Allowed");
   }

@@ -21,4 +21,10 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  compilerOptions: {
+    // Enable React's JSX transform
+    jsx: "react-jsx",
+    // Enable React's automatic runtime
+    jsxImportSource: "react",
+  },
 });

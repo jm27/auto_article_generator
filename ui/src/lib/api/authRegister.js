@@ -1,6 +1,6 @@
-import { supabase } from "../../helpers/supabaseClient.js";
+import { supabase } from "../../../helpers/supabaseClient.js";
 
-export default async function handler(req, res) {
+export async function handleRegister(req, res) {
   if (req.method !== "POST") {
     return res.status(405).send("Method Not Allowed");
   }
@@ -27,9 +27,5 @@ export default async function handler(req, res) {
     return res.status(400).send(signUpError.message);
   }
 
-  return res.status(200).json({
-    success: true,
-    redirect: "/auth/signin",
-    user: signUpData.user,
-  });
+  return res.redirect(302, "/auth/signin");
 }

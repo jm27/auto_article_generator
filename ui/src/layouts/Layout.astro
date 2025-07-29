@@ -40,7 +40,7 @@ console.log("Layout userName:", userName);
 		</main>
 		{Astro.url.pathname !== "/thank-you" && (
 		<footer class="bg-white border-t border-gray-200 py-4 px-2 sm:py-6 sm:px-4 flex flex-col items-center w-full">
-			<SubscribeForm client:load />
+			<SubscribeForm client:visible />
 		</footer>
 		)}
 	</body>

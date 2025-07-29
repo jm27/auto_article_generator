@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { buildApiUrl } from "../utils/baseUrl";
 
 interface AuthWidgetProps {
   isTokenValid: boolean;
   userName?: string | null;
 }
+
+const SIGNOUT_URL = buildApiUrl("api/auth/signout");
 
 export default function AuthWidget(props: AuthWidgetProps) {
   const [showProfileButton, setShowProfileButton] = useState(false);
@@ -21,7 +24,19 @@ export default function AuthWidget(props: AuthWidgetProps) {
   };
 
   const signOut = async () => {
-    await axios.get("/api/auth/signout");
+    console.log("[AuthWidget] Signing out...");
+    try {
+      const response = await axios.get(SIGNOUT_URL);
+      console.log("[AuthWidget] Sign out successful, redirecting to home");
+      console.log("[AuthWidget] Response:", response);
+      if (response.status === 200 && response.data.success) {
+        if (response.data.redirect) {
+          window.location.href = response.data.redirect;
+        }
+      }
+    } catch (error) {
+      console.error("[AuthWidget] Error signing out:", error);
+    }
   };
 
   function register() {

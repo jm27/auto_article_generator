@@ -31,7 +31,7 @@ export default `<mjml>
     </mj-section>
     <mj-raw> <!-- Image Header --> </mj-raw>
     <mj-section
-      background-url="https://mydailyf.com/api/image-proxy?imgUrl=https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
+      background-url="https://mydailyf.com/api/content/image-proxy?imgUrl=https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80"
       background-size="cover"
       background-repeat="no-repeat"
     >
@@ -163,7 +163,7 @@ export default `<mjml>
       <mj-column>
         <mj-image
           width="200px"
-          src="https://mydailyf.com/api/image-proxy?imgUrl=https://designspell.files.wordpress.com/2012/01/sciolino-paris-bw.jpg"
+          src="https://mydailyf.com/api/content/image-proxy?imgUrl=https://designspell.files.wordpress.com/2012/01/sciolino-paris-bw.jpg"
         ></mj-image>
       </mj-column>
       <mj-column>
@@ -187,19 +187,19 @@ export default `<mjml>
       <mj-column>
         <mj-image
           width="100px"
-          src="https://mydailyf.com/api/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x0l.png"
+          src="https://mydailyf.com/api/content/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x0l.png"
         ></mj-image>
       </mj-column>
       <mj-column>
         <mj-image
           width="100px"
-          src="https://mydailyf.com/api/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x01.png"
+          src="https://mydailyf.com/api/content/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x01.png"
         ></mj-image>
       </mj-column>
       <mj-column>
         <mj-image
           width="100px"
-          src="https://mydailyf.com/api/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x0s.png"
+          src="https://mydailyf.com/api/content/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x0s.png"
         ></mj-image>
       </mj-column>
   </mj-body>

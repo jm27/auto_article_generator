@@ -2,7 +2,7 @@ import axios from "axios";
 import {
   mapGenreIdsToName,
   fetchReviewsForMovie,
-} from "../helpers/movie-helpers.js";
+} from "../../../helpers/movie-helpers.js";
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
@@ -28,7 +28,7 @@ async function getSampleMovies() {
   }
 }
 
-export default async function handler(req, res) {
+export async function handleGetMovies(req, res) {
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
     return;

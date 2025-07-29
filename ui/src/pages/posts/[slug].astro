@@ -2,33 +2,6 @@
 import { supabase } from "../../lib/supabase/supabaseClient"
 import "../../styles/global.css";
 
-export async function getStaticPaths() {
-    console.log("Supabase posts data inside")
- 
-    const { data: posts, error: postsError } = await supabase
-        .from('posts')
-        .select('slug')
-        .order('published_at', { ascending: false });
-
-    if (postsError) {
-        throw new Error(`Error fetching posts: ${postsError.message}`);
-    }
-
-    console.log("Supabase posts data:", posts, "Error:", postsError);
-    // If no posts are found, return a default path
-    if (!posts || posts.length === 0) {
-        console.warn("No posts found, returning default path");
-        // Return a default path if no posts are found
-        return [{
-            params: { slug: "the-old-guard-2" }
-        }]
-    }
-
-    // Map the posts to the required format for getStaticPaths
-    return posts.map((post) => ({
-        params: { slug: post.slug },
-    }));
-}
 // Get the post by slug
 const { slug } = Astro.params;
 

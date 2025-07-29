@@ -4,10 +4,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export default async function handler(req, res) {
+export async function handleGenerateContent(req, res) {
   try {
     console.log("Received request body:", req.body);
-    // return res.status(200).json({ summary: "This is a placeholder summary." });
     const { synopsis, title, reviews } = req.body;
     if (!synopsis) {
       console.warn("No synopsis provided in request body.");

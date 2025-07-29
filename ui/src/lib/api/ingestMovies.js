@@ -1,29 +1,13 @@
 import axios from "axios";
-import { supabase } from "../helpers/supabaseClient.js";
-// import { getMovies } from "./get-movies.js";
+import { supabase } from "../../../helpers/supabaseClient.js";
 import { Resend } from "resend";
+import { buildApiUrl } from "../../utils/baseUrl.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const VERCEL_SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-// const VERCEL_SITE_URL = process.env.VERCEL_URL;  // RUN in local uncomment the other line
-const SITE_URL = VERCEL_SITE_URL
-  ? `https://${VERCEL_SITE_URL}`
-  : // ? `http://${VERCEL_SITE_URL}` // RUN in local uncomment this line
-    process.env.SITE_URL;
-
-/**
- * Generates and saves movies to Supabase.
- * Summary of steps:
- * Fetch all movies and their IDs.
- * Query Supabase for posts with those IDs.
- * Build a set of existing IDs.
- * Filter out movies already in the DB.
- * Only call the summary API and upsert for new movies.
- **/
 async function getMovies() {
   try {
-    const response = await axios.get(`${SITE_URL}/api/get-movies`);
+    const response = await axios.get(buildApiUrl("/api/movies/get"));
     return response.data;
   } catch (error) {
     console.error("Error calling get-movies API:", error);
@@ -33,26 +17,21 @@ async function getMovies() {
 
 async function sendEmailNotification(subject, body) {
   await resend.emails.send({
-    from: process.env.EMAIL_FROM,
-    to: process.env.EMAIL_TO,
+    from: process?.env?.EMAIL_FROM || "",
+    to: process?.env?.EMAIL_TO || "",
     subject: subject,
     html: `<p>${body}</p>`,
   });
 }
 
-export async function GET(request) {
+export async function handleIngestMovies(req, res) {
   try {
     const movies = await getMovies();
     console.log("Fetched movies:", movies);
     const movieIds = movies.map((m) => m.id);
     console.log("Movie IDs to check in DB:", movieIds);
-    const newMoviesAdded = [
-      {
-        movieTitle: "",
-        movieSummary: "",
-        movieId: "",
-      },
-    ];
+    const newMoviesAdded = [];
+
     // Query Supabase to check if movies already exist by IDs
     const { data: existingMovies, error: fetchError } = await supabase
       .from("posts")
@@ -61,13 +40,10 @@ export async function GET(request) {
 
     if (fetchError) {
       console.error("Error fetching existing movies:", fetchError);
-      return new Response(
-        JSON.stringify({
-          error: "Error fetching existing movies",
-          details: fetchError,
-        }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return res.status(500).json({
+        error: "Error fetching existing movies",
+        details: fetchError,
+      });
     }
 
     console.log("Existing movies in DB:", existingMovies);
@@ -89,21 +65,14 @@ export async function GET(request) {
       console.log(
         "No new movies to save. All movies already exist in Supabase."
       );
-      return new Response(
-        JSON.stringify({
-          message:
-            "No new movies to save. All movies already exist in Supabase.",
-        }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return res.status(200).json({
+        message: "No new movies to save. All movies already exist in Supabase.",
+      });
     }
 
     if (!movies || movies.length === 0) {
       console.error("No movies found to save.");
-      return new Response(
-        JSON.stringify({ error: "No movies found to save." }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return res.status(404).json({ error: "No movies found to save." });
     }
 
     let saved = 0;
@@ -111,7 +80,7 @@ export async function GET(request) {
     for (const movie of newMovies) {
       console.log(`Processing movie: ${movie.title} (ID: ${movie.id})`);
       // Generate Summary
-      const response = await axios.post(`${SITE_URL}/api/generate-content`, {
+      const response = await axios.post(buildApiUrl("/api/content/generate"), {
         title: movie.title,
         synopsis: movie.synopsis,
         reviews: movie.reviews,
@@ -133,9 +102,9 @@ export async function GET(request) {
           tags: [...(movie.tags || [])],
           published_at: new Date().toISOString(),
           reviews: [...(movie.reviews || [])],
-          images: movie.images.map((img) => {
-            return `https://image.tmdb.org/t/p/original${img}`;
-          }),
+          images: movie.images.map(
+            (img) => `https://image.tmdb.org/t/p/original${img}`
+          ),
         },
         { onConflict: ["id"] }
       );
@@ -166,29 +135,23 @@ export async function GET(request) {
         .join("<br>")}`
     );
 
-    return new Response(
-      JSON.stringify({
-        message: `Movies processed. Saved: ${saved}, Failed: ${failed}, New Movies Added: ${newMoviesAdded
-          .map(
-            (movie) =>
-              `<strong>${movie.movieTitle}</strong> (${movie.movieId}) - ${movie.movieSummary}`
-          )
-          .join("<br>")}`,
-      }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return res.status(200).json({
+      message: `Movies processed. Saved: ${saved}, Failed: ${failed}, New Movies Added: ${newMoviesAdded
+        .map(
+          (movie) =>
+            `<strong>${movie.movieTitle}</strong> (${movie.movieId}) - ${movie.movieSummary}`
+        )
+        .join("<br>")}`,
+    });
   } catch (err) {
     console.error("Unexpected error in ingest-movies:", err);
     await sendEmailNotification(
       "Daily Movie Ingestion Report",
       `Unexpected error in ingest-movies: ${err.message}`
     );
-    return new Response(
-      JSON.stringify({
-        error: "Unexpected error in ingest-movies",
-        details: err.message,
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return res.status(500).json({
+      error: "Unexpected error in ingest-movies",
+      details: err.message,
+    });
   }
 }
