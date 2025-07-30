@@ -25,7 +25,7 @@ const SIGNIN_URL = buildApiUrl('api/auth/signin');
     New here? <a class="text-blue-600" href="/auth/register">Create an account</a>
   </p>
 
-  <form action={SIGNIN_URL} method="post" class="space-y-4">
+  <form id="signin-form" class="space-y-4">
     <div>
       <label for="email" class="block mb-1 font-medium">Email</label>
       <input
@@ -58,9 +58,160 @@ const SIGNIN_URL = buildApiUrl('api/auth/signin');
     </div>
     <button
       type="submit"
-      class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+      id="signin-button"
+      class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      Sign In
+      <span id="button-text">Sign In</span>
     </button>
+    
+    <!-- Status messages -->
+    <div id="status-message" class="hidden text-center"></div>
   </form>
 </Layout>
+
+
+ <script>
+import axios from 'axios';
+import { buildApiUrl } from '../../utils/baseUrl';
+    
+    console.log('[Signin] Script loaded');
+    
+    const form = document.getElementById('signin-form') as HTMLFormElement | null;
+    const button = document.getElementById('signin-button');
+    const buttonText = document.getElementById('button-text');
+    const statusMessage = document.getElementById('status-message');
+    
+    const SIGNIN_URL = buildApiUrl('api/auth/signin');
+    console.log('[Signin] SIGNIN_URL:', SIGNIN_URL);
+    
+    function showStatus(message: string | null, isError = false) {
+      if (!statusMessage) return;
+      statusMessage.textContent = message;
+      statusMessage.className = `text-center ${isError ? 'text-red-600' : 'text-green-600'}`;
+      statusMessage.classList.remove('hidden');
+    }
+    
+    function hideStatus() {
+      statusMessage?.classList.add('hidden');
+    }
+    
+    function setLoading(loading: boolean) {
+      if (button) {
+        (button as HTMLButtonElement).disabled = loading;
+      }
+      if (buttonText) {
+        buttonText.textContent = loading ? 'Signing In...' : 'Sign In';
+      }
+    }
+    
+    async function handleSubmit(event: KeyboardEvent | Event) {
+      console.log('[Signin] Form submit event triggered');
+      event.preventDefault();
+      
+      hideStatus();
+      setLoading(true);
+      
+      // Get form data
+      if (!form) {
+        showStatus('Form not found.', true);
+        setLoading(false);
+        return;
+      }
+      const formData = new FormData(form);
+      const email = formData.get('email');
+      const password = formData.get('password');
+      const magic = formData.get('magic') === 'true';
+      
+      console.log('[Signin] Form data:', {
+        email: email,
+        password: password ? '***PASSWORD_PROVIDED***' : 'NO_PASSWORD',
+        magic: magic
+      });
+      
+      try {
+        console.log('[Signin] Making POST request to:', SIGNIN_URL);
+        
+        const response = await axios.post(
+          SIGNIN_URL,
+          {
+            email: email,
+            password: password,
+            magic: magic
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            withCredentials: true, // Important for cookies
+            validateStatus: () => true // Don't throw on 4xx/5xx status codes
+          }
+        );
+        
+        console.log('[Signin] Response received:', {
+          status: response.status,
+          data: response.data
+        });
+        
+        if (response.status === 200 && response.data.success) {
+          console.log('[Signin] Sign in successful');
+          showStatus('Sign in successful! Redirecting...', false);
+          
+          // Handle redirect
+          if (response.data.redirect) {
+            console.log('[Signin] Redirecting to:', response.data.redirect);
+            setTimeout(() => {
+              window.location.href = response.data.redirect;
+            }, 1000);
+          } else {
+            console.log('[Signin] No redirect URL, going to home');
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 1000);
+          }
+        } else {
+          console.error('[Signin] Sign in failed:', response.data);
+          showStatus(response.data.message || 'Sign in failed. Please try again.', true);
+          setLoading(false);
+        }
+        
+      } catch (error) {
+        console.error('[Signin] Request error:', error);
+        
+        if (axios.isAxiosError(error)) {
+          console.error('[Signin] Axios error details:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status
+          });
+          
+          const errorMessage = error.response?.data?.message || 
+                             error.response?.data || 
+                             'Network error. Please try again.';
+          showStatus(errorMessage, true);
+        } else {
+          showStatus('An unexpected error occurred. Please try again.', true);
+        }
+        
+        setLoading(false);
+      }
+    }
+    
+    // Add event listener
+    if (form) {
+      form.addEventListener('submit', handleSubmit);
+      console.log('[Signin] Event listener attached to form');
+    } else {
+      console.error('[Signin] Form element not found');
+    }
+    
+    // Handle enter key in password field
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+      passwordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          console.log('[Signin] Enter key pressed in password field');
+          handleSubmit(e);
+        }
+      });
+    }
+  </script>

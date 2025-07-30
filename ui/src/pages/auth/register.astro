@@ -13,7 +13,7 @@ const REGISTER_URL = buildApiUrl("api/auth/register");
     Already have an account? <a class="text-blue-600" href="/auth/signin">Sign in</a>
   </p>
 
-  <form id="registerForm" action={REGISTER_URL} method="post" class="space-y-4">
+  <form id="registerForm" class="space-y-4">
     <div>
       <label for="userName" class="block mb-1 font-medium">User Name</label>
       <input
@@ -23,6 +23,7 @@ const REGISTER_URL = buildApiUrl("api/auth/register");
         required
         class="w-full border px-3 py-2 rounded"
       />
+    </div>
     <div>
       <label for="email" class="block mb-1 font-medium">Email</label>
       <input
@@ -62,36 +63,190 @@ const REGISTER_URL = buildApiUrl("api/auth/register");
     </div>
     <button
       type="submit"
-      class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+      id="register-button"
+      class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      Register
+      <span id="button-text">Register</span>
     </button>
+    
+    <!-- Status messages -->
+    <div id="status-message" class="hidden text-center"></div>
   </form>
 </Layout>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('registerForm');
-    if (form) {
-      form.addEventListener('submit', function(e) {
-        const password = (form.querySelector('input[name="password"]') as HTMLInputElement | null)?.value ?? '';
-        const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])(?=.*\d).{6,}$/;
-        if (!regex.test(password)) {
-          e.preventDefault();
-          alert('Password must be at least 6 characters, include one uppercase letter, one number, and one special character.');
-        }
-      });
-    }
+  import axios from 'axios';
+  import { buildApiUrl } from '../../utils/baseUrl';
+  
+  console.log('[Register] Script loaded');
+  
+  const form = document.getElementById('registerForm');
+  const button = document.getElementById('register-button');
+  const buttonText = document.getElementById('button-text');
+  const statusMessage = document.getElementById('status-message');
 
+  const REGISTER_URL = buildApiUrl('/api/auth/register');
+  console.log('[Register] REGISTER_URL:', REGISTER_URL);
+  
+  function showStatus(message: string | null, isError = false) {
+    if (statusMessage) {
+      statusMessage.textContent = message;
+      statusMessage.className = `text-center ${isError ? 'text-red-600' : 'text-green-600'}`;
+      statusMessage.classList.remove('hidden');
+    }
+  }
+  
+  function hideStatus() {
+    statusMessage?.classList.add('hidden');
+  }
+  
+  function setLoading(loading: boolean) {
+    if (button) {
+      (button as HTMLButtonElement).disabled = loading;
+    }
+    if (buttonText) {
+      buttonText.textContent = loading ? 'Registering...' : 'Register';
+    }
+  }
+  
+  function validatePassword(password: FormDataEntryValue | null) {
+    const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])(?=.*\d).{6,}$/;
+    if (typeof password !== 'string') return false;
+    return regex.test(password);
+  }
+  
+  async function handleSubmit(event: Event) {
+    console.log('[Register] Form submit event triggered');
+    event.preventDefault();
+    
+    hideStatus();
+    setLoading(true);
+    
+    // Get form data
+    const formData = new FormData(form as HTMLFormElement);
+    const userName = formData.get('userName');
+    const email = formData.get('email');
+    const password = formData.get('password');
+    const opt_in = formData.get('opt_in') === 'true';
+    
+    console.log('[Register] Form data:', {
+      userName: userName,
+      email: email,
+      password: password ? '***PASSWORD_PROVIDED***' : 'NO_PASSWORD',
+      opt_in: opt_in
+    });
+    
+    // Validate password
+    if (!validatePassword(password)) {
+      console.log('[Register] Password validation failed');
+      showStatus('Password must be at least 6 characters, include one uppercase letter, one number, and one special character.', true);
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      console.log('[Register] Making POST request to:', REGISTER_URL);
+      
+      const response = await axios.post(
+        REGISTER_URL,
+        {
+          userName: userName,
+          email: email,
+          password: password,
+          opt_in: opt_in
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true, // Important for cookies
+          validateStatus: () => true // Don't throw on 4xx/5xx status codes
+        }
+      );
+      
+      console.log('[Register] Response received:', {
+        status: response.status,
+        data: response.data
+      });
+      
+      if (response.status === 200 && response.data.success) {
+        console.log('[Register] Registration successful');
+        showStatus('Registration successful! Redirecting...', false);
+        
+        // Handle redirect
+        if (response.data.redirect) {
+          console.log('[Register] Redirecting to:', response.data.redirect);
+          setTimeout(() => {
+            window.location.href = response.data.redirect;
+          }, 1500);
+        } else {
+          console.log('[Register] No redirect URL, going to home');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
+        }
+      } else {
+        console.error('[Register] Registration failed:', response.data);
+        showStatus(response.data || 'Registration failed. Please try again.', true);
+        setLoading(false);
+      }
+      
+    } catch (error) {
+      console.error('[Register] Request error:', error);
+      
+      if (axios.isAxiosError(error)) {
+        console.error('[Register] Axios error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
+        
+        const errorMessage = error.response?.data?.message || 
+                           error.response?.data || 
+                           'Network error. Please try again.';
+        showStatus(errorMessage, true);
+      } else {
+        showStatus('An unexpected error occurred. Please try again.', true);
+      }
+      
+      setLoading(false);
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[Register] DOM content loaded');
+    
+    // Add form submit event listener
+    if (form) {
+      form.addEventListener('submit', handleSubmit);
+      console.log('[Register] Event listener attached to form');
+    }
+    
     // Password visibility toggle
-    const passwordInput = document.getElementById('password') as HTMLInputElement | null;
+    const passwordInput = document.getElementById('password');
     const toggleBtn = document.getElementById('togglePassword');
     const toggleIcon = document.getElementById('togglePasswordIcon');
+    
     if (passwordInput && toggleBtn && toggleIcon) {
       toggleBtn.addEventListener('click', function() {
-        const isPassword = passwordInput.type === 'password';
-        passwordInput.type = isPassword ? 'text' : 'password';
+        console.log('[Register] Password visibility toggle clicked');
+        const isPassword = (passwordInput as HTMLInputElement).type === 'password';
+        (passwordInput as HTMLInputElement).type = isPassword ? 'text' : 'password';
         toggleIcon.textContent = isPassword ? '🙈' : '👁️';
+      });
+      console.log('[Register] Password toggle event listener attached');
+    }
+    
+    // Handle enter key in form fields
+    if (form) {
+      const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+      inputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            console.log('[Register] Enter key pressed in input field');
+            handleSubmit(e);
+          }
+        });
       });
     }
   });
