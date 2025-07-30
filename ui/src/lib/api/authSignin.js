@@ -113,5 +113,9 @@ export async function handleSignin(req, res) {
   console.log("[authSignin] Session cookies set, redirecting to profile");
 
   // Server-side redirect
-  return res.redirect(302, "/auth/profile");
+  return res.status(200).send({
+    success: true,
+    message: "User signed in successfully",
+    redirect: "/auth/profile",
+  });
 }
