@@ -2,7 +2,6 @@
 import Layout from '../../layouts/Layout.astro';
 import '../../styles/global.css';
 import { isAccessTokenValid } from '../../utils/helpers';
-import { buildApiUrl } from '../../utils/baseUrl';
 export const prerender = false;
 
 const { cookies, redirect } = Astro;
@@ -16,7 +15,6 @@ if (isTokenValid) {
   return redirect('/');
 }
 
-const SIGNIN_URL = buildApiUrl('api/auth/signin');
 ---
 
 <Layout title="Sign in">
