@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 .vercel
 .env*.local
+
+
+# Ignore .venv in api/agents
+api/agents/.venv/
