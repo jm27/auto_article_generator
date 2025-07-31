@@ -1,0 +1,4 @@
+# Core dependencies for the research agent
+langgraph>=0.0.40
+openai>=1.0.0
+requests>=2.31.0

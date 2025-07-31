@@ -132,3 +132,21 @@ This documentation provides a comprehensive overview of all 13 API handlers, inc
 - `WEBHOOK_SECRET`: Secret for webhook signature verification
 
 ---
+
+## Sample map
+
+## Sample layout of APIS
+
+```
+/api
+  auth-register.ts        ← Node.js (your existing handlers)
+  auth-signin.ts          ← Node.js
+  movies.ts               ← Node.js
+  newsletter.ts           ← Node.js
+  agents/
+    research.py           ← Python (LangGraph research agent)
+    draft.py              ← Python (LangGraph drafting agent)
+    editor.py             ← Python (LangGraph fact‑check agent)
+    distribute.py         ← Python (LangGraph distribution agent)
+requirements.txt          ← Python deps (langgraph, openai, etc.)
+```
