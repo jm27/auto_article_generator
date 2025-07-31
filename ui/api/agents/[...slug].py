@@ -11,8 +11,12 @@ from urllib.parse import urlparse
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("AgentRouter")
 
-# FIXED: Map sub-paths to Python files in the same agents directory
-AGENT_DIR = os.path.dirname(__file__)  # Same directory as this router
+# FIXED: Point to the correct agents-apis directory
+# Current file is at: ui/api/agents/[...slug].py
+# Target directory is: ui/agents-apis/
+# So we need to go up 2 levels (agents -> api -> ui) then into agents-apis
+AGENT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'agents-apis')
+
 AGENT_MAP = {
     'research': 'research.py',
     'draft': 'draft.py',
