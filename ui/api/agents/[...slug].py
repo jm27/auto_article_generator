@@ -97,75 +97,69 @@ class handler(BaseHTTPRequestHandler):
                 self._send_error_response(404, "Unknown agent", {"available": list(AGENT_MAP.keys())})
                 return
 
+            
             # Load agent handler
-            agent_handler_class = load_agent_handler(agent_file)
-            if not agent_handler_class:
+            agent_handler = load_agent_handler(agent_file)
+            if not agent_handler:
                 logger.error(f"[Router] Failed to load agent handler for {agent_name}")
                 self._send_error_response(500, "Agent handler not found")
                 return
 
-            logger.info(f"[Router] Delegating to agent: {agent_name}")
-            
-            # FIXED: Create a mock request/response environment for the agent
+            logger.info(f"[Router] Processing request with agent: {agent_name}")
+
             try:
-                # Create instance with proper parameters for BaseHTTPRequestHandler
-                agent_instance = agent_handler_class(self.rfile, self.wfile, self.server)
+                # Read request body
+                content_length = int(self.headers.get('Content-Length', 0))
+                if content_length > 0:
+                    request_data = self.rfile.read(content_length)
+                    payload = json.loads(request_data.decode('utf-8'))
+                else:
+                    payload = {}
                 
-                # CRITICAL FIX: Set all required attributes before calling methods
-                agent_instance.client_address = getattr(self, 'client_address', ('localhost', 0))
-                agent_instance.command = self.command
-                agent_instance.path = clean_path
-                agent_instance.request_version = self.request_version
-                agent_instance.headers = self.headers
-                agent_instance.rfile = self.rfile
-                agent_instance.wfile = self.wfile
-                agent_instance.server = self.server
+                logger.info(f"[Router] Payload: {payload}")
                 
-                # Call the agent's POST handler
-                agent_instance.do_POST()
-                logger.info(f"[Router] Successfully delegated to {agent_name}")
-                
-            except Exception as delegation_error:
-                logger.error(f"[Router] Error during delegation: {delegation_error}")
-                logger.error(f"[Router] Delegation error type: {type(delegation_error).__name__}")
-                
-                # Fallback: Call agent directly without BaseHTTPRequestHandler inheritance
-                try:
-                    logger.info(f"[Router] Trying direct agent call fallback")
+                # Check if handler is a function or class
+                if callable(agent_handler) and not isinstance(agent_handler, type):
+                    # Function-based handler (preferred)
+                    logger.info(f"[Router] Using function-based handler")
+                    result = agent_handler(payload)
+                else:
+                    # Class-based handler - call it directly without BaseHTTPRequestHandler delegation
+                    logger.info(f"[Router] Using direct agent processing")
                     
-                    # Read request body for direct processing
-                    content_length = int(self.headers.get('Content-Length', 0))
-                    if content_length > 0:
-                        request_data = self.rfile.read(content_length)
-                        payload = json.loads(request_data.decode('utf-8'))
+                    # Create a simple mock request object
+                    mock_request = type('MockRequest', (), {
+                        'json': payload,
+                        'body': json.dumps(payload),
+                        'method': 'POST',
+                        'headers': dict(self.headers)
+                    })()
+                    
+                    # Call the agent's processing function directly
+                    if hasattr(agent_handler, 'process_research_request'):
+                        result = agent_handler.process_research_request(payload)
                     else:
-                        payload = {}
-                    
-                    logger.info(f"[Router] Direct call payload: {payload}")
-                    
-                    # Send success headers
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json')
-                    self.send_header('Access-Control-Allow-Origin', '*')
-                    self.end_headers()
-                    
-                    # Simple fallback response
-                    fallback_response = {
-                        "success": True,
-                        "message": f"Agent {agent_name} executed via fallback method",
-                        "query": payload.get('query', payload.get('topic', '')),
-                        "note": "This is a fallback response due to delegation issues"
-                    }
-                    
-                    response_body = json.dumps(fallback_response, indent=2)
-                    self.wfile.write(response_body.encode())
-                    logger.info(f"[Router] Fallback response sent")
-                    return
-                    
-                except Exception as fallback_error:
-                    logger.error(f"[Router] Fallback also failed: {fallback_error}")
-                    self._send_error_response(500, f"Both delegation and fallback failed: {str(fallback_error)}")
-                    return
+                        # Fallback response
+                        result = {
+                            "success": True,
+                            "message": f"Agent {agent_name} processed successfully",
+                            "query": payload.get('query', payload.get('topic', '')),
+                            "data": payload
+                        }
+                
+                # Send response
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                
+                response_body = json.dumps(result, indent=2)
+                self.wfile.write(response_body.encode())
+                logger.info(f"[Router] Successfully processed request with {agent_name}")
+                
+            except Exception as e:
+                logger.error(f"[Router] Error processing request: {e}")
+                self._send_error_response(500, f"Agent processing failed: {str(e)}")
             
         except Exception as e:
             logger.error(f"[Router] Error in do_POST: {e}")

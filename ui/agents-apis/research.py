@@ -314,4 +314,61 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(error_response.encode())
         return
 
+# Add this at the very end of your research.py file, after the existing handler class:
+
+def process_research_request(payload):
+    """Function-based handler for direct calls"""
+    logger.info(f"[Research Agent] Direct function call with payload: {payload}")
+    
+    if not compiled_graph:
+        logger.error("[Research Agent] Graph not compiled")
+        return {"error": "Research agent not properly initialized"}
+    
+    try:
+        # Extract and validate query
+        query = payload.get('query', payload.get('topic', '')).strip()
+        logger.info(f"[Research Agent] Query: '{query}'")
+        
+        if not query:
+            logger.warning("[Research Agent] No query provided")
+            return {
+                "error": "Query or topic is required",
+                "example": {"query": "artificial intelligence"}
+            }
+        
+        if len(query) > 200:
+            logger.warning(f"[Research Agent] Query too long: {len(query)} chars")
+            return {"error": "Query too long (max 200 characters)"}
+        
+        # Execute the research graph
+        logger.info("[Research Agent] Executing graph...")
+        initial_state = {"query": query}
+        result = compiled_graph.invoke(initial_state)
+        logger.info("[Research Agent] Graph execution completed successfully")
+        
+        # Build response
+        response_data = {
+            "success": True,
+            "query": query,
+            "research_data": result.get("research_data", []),
+            "analysis": result.get("analysis", ""),
+            "final_report": result.get("final_report", ""),
+            "metadata": {
+                "topics_found": len(result.get("research_data", [])),
+                "processed_via": "direct_function_call"
+            }
+        }
+        
+        logger.info(f"[Research Agent] Success response prepared")
+        return response_data
+        
+    except Exception as e:
+        logger.error(f"[Research Agent] Unexpected error: {e}")
+        logger.error(f"[Research Agent] Error type: {type(e).__name__}")
+        return {"error": f"Internal server error: {str(e)}"}
+
+# Add this line to export the function
+handler.process_research_request = process_research_request
+
+
 logger.info("[Research] ✅ Module ready for Vercel deployment!")
