@@ -14,7 +14,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-logger.info("[Research Agent] Initialized")
+logger.info("[Research Agent] Initialized logging")
 
 # Define your state
 class ResearchState(TypedDict):
