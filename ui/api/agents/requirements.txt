@@ -2,3 +2,13 @@
 langgraph>=0.0.40
 openai>=1.0.0
 requests>=2.31.0
+
+# LangChain ecosystem
+langchain>=0.1.0
+langchain-openai>=0.1.0
+
+# LangSmith for monitoring and debugging
+langsmith>=0.1.0
+
+# Environment management
+python-dotenv>=1.0.0

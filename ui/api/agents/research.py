@@ -8,6 +8,8 @@ from typing import TypedDict, List
 
 from langgraph.graph import StateGraph, END
 from openai import OpenAI
+from langsmith.wrappers import wrap_openai
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Enhanced Logging Configuration
@@ -75,7 +77,7 @@ logger.info("[OpenAI] 🔑 Initializing OpenAI client...")
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 if openai_api_key:
     logger.info(f"[OpenAI] ✅ API key found (length: {len(openai_api_key)} chars, starts with: {openai_api_key[:10]}...)")
-    openai_client = OpenAI(api_key=openai_api_key)
+    openai_client = wrap_openai(OpenAI(api_key=openai_api_key))
     logger.info("[OpenAI] ✅ OpenAI client successfully initialized")
 else:
     logger.error("[OpenAI] ❌ OPENAI_API_KEY not found in environment variables")
