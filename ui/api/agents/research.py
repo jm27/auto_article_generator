@@ -95,7 +95,7 @@ logger.info("[Config] 📝 Setting up prompts and regex patterns...")
 RESEARCH_PROMPT = """
 Find 5 current, newsworthy topics related to '{topic}'.
 Requirements:
-- Diverse perspectives
+- Diverse perspectives, I am looking for information from 2025 onwards.
 Output exactly 5 lines:
 1. Subtopic Title
 2. Subtopic Title
