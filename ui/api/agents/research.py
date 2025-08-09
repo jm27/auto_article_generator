@@ -105,6 +105,14 @@ Output exactly 5 lines:
 TOPICSELECTOR_SYSTEM = "You are a savvy topic selector, sentiment analyst, and editor," \
 "selecting the 2 most engaging (positive) and 1 odd/controversial topic from the list provided."
 
+EDITOR_PROMPT = """
+Act as an experienced entertainment news editor creating concise, engaging,
+and slightly witty articles aimed at mainstream pop culture fans aged 18–35,
+with clear structure, relatable analogies, and light humor; avoid legal jargon
+and AI ethics debates, focusing instead on storytelling, personality, and the
+human side of the news.
+"""
+
 TOPIC_ITEM_RE = re.compile(r'^(?:\d+\.\s*|\-\s*)(?:\*\*|["\']?)(.+?)(?:\*\*|["\']?)$')
 
 logger.debug(f"[Config] ✅ Research prompt length: {len(RESEARCH_PROMPT)} chars")
@@ -341,7 +349,7 @@ def edit_node(state: PipelineState) -> PipelineState:
             resp = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "user", "content": "You are a friendly, human-like editor."},
+                    {"role": "system", "content": EDITOR_PROMPT},
                     {"role": "user", "content": f"Polish this draft to be more engaging and concise:\n\n{draft}"}
                 ],
                 temperature=0.3,
