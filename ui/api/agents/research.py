@@ -102,8 +102,7 @@ Output exactly 5 lines:
 ...
 """.strip()
 
-TOPICSELECTOR_SYSTEM = "You are a savvy topic selector, sentiment analyst, and editor," \
-"selecting the 2 most engaging (positive) and 1 odd/controversial topic from the list provided."
+TOPICSELECTOR_SYSTEM = "Select exactly 2 most engaging positive topics and 1 odd/controversial topic from the provided list, keeping original wording and labeling the output clearly."
 
 EDITOR_PROMPT = """
 Act as an experienced entertainment news editor creating concise, engaging,

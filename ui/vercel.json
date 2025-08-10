@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/newsletter/ingest-movies",
+      "path": "/api/content/ingest-movies",
       "schedule": "30 0 * * *"
     },
     {
