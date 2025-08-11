@@ -5,6 +5,99 @@ import { buildApiUrl } from "../../utils/baseUrl.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Helper function to create a URL-friendly slug
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
+}
+
+async function createAgentPostPerMovie() {
+  const { data: movies, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("is_movie", true)
+    .eq("processed", false);
+
+  if (error) {
+    console.error("Error fetching movies:", error);
+    return;
+  }
+
+  try {
+    for (const movie of movies) {
+      try {
+        // Create an agent post for each movie
+        const agentResponse = await axios.post(
+          buildApiUrl("/api/agents/research"),
+          {
+            topic: movie.title,
+          }
+        );
+
+        console.log(
+          `Created agent post for movie ${movie.title}:`,
+          agentResponse.data
+        );
+
+        if (agentResponse.data.status !== "success") {
+          console.error(
+            `Error creating agent post for movie ${movie.title}:`,
+            agentResponse.data
+          );
+          continue;
+        }
+
+        // Process each post from the agent response
+        for (const post of agentResponse.data.posts) {
+          const { error: upsertError } = await supabase.from("posts").upsert({
+            title: post.topic,
+            slug: slugify(post.topic),
+            content: post.final,
+            draft: post.draft,
+            sources: post.sources,
+            tags: [...(movie.tags || []), "generated"],
+            published_at: new Date().toISOString(),
+            images: movie.images,
+            parent_id: movie.id,
+            is_movie: false,
+            processed: true,
+          });
+
+          if (upsertError) {
+            console.error(`Error saving post for ${post.topic}:`, upsertError);
+          } else {
+            console.log(`Successfully saved post: ${post.topic}`);
+          }
+        }
+
+        // Mark the movie as processed
+        const { error: updateError } = await supabase
+          .from("posts")
+          .update({ processed: true })
+          .eq("id", movie.id);
+
+        if (updateError) {
+          console.error(
+            `Error updating movie ${movie.title} as processed:`,
+            updateError
+          );
+        }
+      } catch (movieError) {
+        console.error(`Error processing movie ${movie.title}:`, movieError);
+      }
+    }
+  } catch (err) {
+    console.error(`Unexpected error in createAgentPostPerMovie:`, err);
+  }
+}
+
 async function getMovies() {
   try {
     const response = await axios.get(buildApiUrl("/api/movies/get"));
@@ -16,12 +109,16 @@ async function getMovies() {
 }
 
 async function sendEmailNotification(subject, body) {
-  await resend.emails.send({
-    from: process?.env?.EMAIL_FROM || "",
-    to: process?.env?.EMAIL_TO || "",
-    subject: subject,
-    html: `<p>${body}</p>`,
-  });
+  try {
+    await resend.emails.send({
+      from: process?.env?.EMAIL_FROM || "",
+      to: process?.env?.EMAIL_TO || "",
+      subject: subject,
+      html: `<p>${body}</p>`,
+    });
+  } catch (error) {
+    console.error("Error sending email notification:", error);
+  }
 }
 
 export async function handleIngestMovies(req, res) {
@@ -77,53 +174,69 @@ export async function handleIngestMovies(req, res) {
 
     let saved = 0;
     let failed = 0;
+
     for (const movie of newMovies) {
       console.log(`Processing movie: ${movie.title} (ID: ${movie.id})`);
-      // Generate Summary
-      const response = await axios.post(buildApiUrl("/api/content/generate"), {
-        title: movie.title,
-        synopsis: movie.synopsis,
-        reviews: movie.reviews,
-      });
-      console.log("Summary API response:", response.data);
-      const summary = response.data.summary;
-      if (!summary) {
-        console.error(`No summary generated for movie: ${movie.title}`);
-        failed++;
-        continue;
-      }
-      // Save to Supabase
-      const { error } = await supabase.from("posts").upsert(
-        {
-          id: movie.id,
-          title: movie.title,
-          slug: movie.title.toLowerCase().replace(/\s+/g, "-"),
-          content: summary,
-          tags: [...(movie.tags || [])],
-          published_at: new Date().toISOString(),
-          reviews: [...(movie.reviews || [])],
-          images: movie.images.map(
-            (img) => `https://image.tmdb.org/t/p/original${img}`
-          ),
-        },
-        { onConflict: ["id"] }
-      );
 
-      if (error) {
-        console.error(`Error saving movie ${movie.title}:`, error);
+      try {
+        // Generate Summary
+        const response = await axios.post(
+          buildApiUrl("/api/content/generate"),
+          {
+            title: movie.title,
+            synopsis: movie.synopsis,
+            reviews: movie.reviews,
+          }
+        );
+
+        console.log("Summary API response:", response.data);
+        const summary = response.data.summary;
+
+        if (!summary) {
+          console.error(`No summary generated for movie: ${movie.title}`);
+          failed++;
+          continue;
+        }
+
+        // Save to Supabase
+        const { error } = await supabase.from("posts").upsert(
+          {
+            id: movie.id,
+            title: movie.title,
+            slug: movie.title.toLowerCase().replace(/\s+/g, "-"),
+            content: summary,
+            tags: [...(movie.tags || [])],
+            published_at: new Date().toISOString(),
+            reviews: [...(movie.reviews || [])],
+            images: movie.images.map(
+              (img) => `https://image.tmdb.org/t/p/original${img}`
+            ),
+            is_movie: true,
+            processed: false,
+          },
+          { onConflict: ["id"] }
+        );
+
+        if (error) {
+          console.error(`Error saving movie ${movie.title}:`, error);
+          failed++;
+        } else {
+          console.log(`Movie ${movie.title} saved successfully.`);
+          // Add to newMoviesAdded array for email notification
+          console.log("Adding movie to newMoviesAdded:", movie.title);
+          newMoviesAdded.push({
+            movieTitle: movie.title,
+            movieSummary: summary,
+            movieId: movie.id,
+          });
+          saved++;
+        }
+      } catch (movieError) {
+        console.error(`Error processing movie ${movie.title}:`, movieError);
         failed++;
-      } else {
-        console.log(`Movie ${movie.title} saved successfully.`);
-        // Add to newMoviesAdded array for email notification
-        console.log("Adding movie to newMoviesAdded:", movie.title);
-        newMoviesAdded.push({
-          movieTitle: movie.title,
-          movieSummary: summary,
-          movieId: movie.id,
-        });
-        saved++;
       }
     }
+
     // Send email notification after processing
     await sendEmailNotification(
       "Daily Movie Ingestion Report",
@@ -135,13 +248,22 @@ export async function handleIngestMovies(req, res) {
         .join("<br>")}`
     );
 
+    try {
+      console.log("Creating agent posts for new movies...");
+      // Call the function to create agent posts for each movie
+      createAgentPostPerMovie();
+    } catch (err) {
+      console.error("Error creating agent posts:", err);
+      await sendEmailNotification(
+        "Daily Movie Ingestion Report",
+        `Error creating agent posts: ${err.message}`
+      );
+    }
+
     return res.status(200).json({
-      message: `Movies processed. Saved: ${saved}, Failed: ${failed}, New Movies Added: ${newMoviesAdded
-        .map(
-          (movie) =>
-            `<strong>${movie.movieTitle}</strong> (${movie.movieId}) - ${movie.movieSummary}`
-        )
-        .join("<br>")}`,
+      message: `Movies processed. Saved: ${saved}, Failed: ${failed}`,
+      newMoviesAdded: newMoviesAdded.length,
+      details: newMoviesAdded,
     });
   } catch (err) {
     console.error("Unexpected error in ingest-movies:", err);
