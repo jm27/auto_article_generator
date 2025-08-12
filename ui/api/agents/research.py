@@ -105,11 +105,26 @@ Output exactly 5 lines:
 TOPICSELECTOR_SYSTEM = "Select exactly 2 most engaging positive topics and 1 odd/controversial topic from the provided list, keeping original wording and labeling the output clearly."
 
 EDITOR_PROMPT = """
-Act as an experienced entertainment news editor creating concise, engaging,
-and slightly witty articles aimed at mainstream pop culture fans aged 18–35,
-with clear structure, relatable analogies, and light humor; avoid legal jargon
-and AI ethics debates, focusing instead on storytelling, personality, and the
-human side of the news.
+You are an experienced entertainment news editor creating engaging articles for mainstream pop culture fans aged 18–35.
+
+Your task:
+1. Create an SEO-optimized, clickbait-worthy title (under 60 characters)
+2. Polish the draft into a concise, engaging article with clear structure, relatable analogies, and light humor
+3. Focus on storytelling, personality, and the human side of the news
+4. Avoid legal jargon and AI ethics debates
+
+Output MUST be valid JSON in this exact format:
+{
+  "title": "Your SEO-Optimized Clickbait Title Here",
+  "content": "Your polished article content here..."
+}
+
+Make sure the title is:
+- Attention-grabbing and click-worthy
+- SEO-optimized with relevant keywords
+- Under 60 characters for social media
+- Engaging for 18-35 year olds
+- Reflects the article's main hook
 """
 
 TOPIC_ITEM_RE = re.compile(r'^(?:\d+\.\s*|\-\s*)(?:\*\*|["\']?)(.+?)(?:\*\*|["\']?)$')
@@ -128,9 +143,9 @@ class PipelineState(TypedDict):
     raw_topics: List[str]
     selected_topics: List[str]
     drafts: List[str]
-    finals: List[str]
+    finals: List[dict]
     sources: List[str]
-    posts: List[str]
+    posts: List[dict]
 
 logger.info("[State] ✅ PipelineState TypedDict defined successfully")
 
@@ -349,24 +364,72 @@ def edit_node(state: PipelineState) -> PipelineState:
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": EDITOR_PROMPT},
-                    {"role": "user", "content": f"Polish this draft to be more engaging and concise:\n\n{draft}"}
+                    {"role": "user", "content": f"Polish this draft and create an engaging title:\n\n{draft}"}
                 ],
                 temperature=0.3,
             )
             
-            final_content = resp.choices[0].message.content.strip()
-            logger.info(f"[Editor] ✅ Draft {i} edited successfully ({len(final_content)} chars)")
-            logger.debug(f"[Editor] 📄 Final {i} preview: {final_content[:150]}...")
+            response_content = resp.choices[0].message.content.strip()
+            logger.info(f"[Editor] ✅ Draft {i} edited successfully ({len(response_content)} chars)")
+            logger.debug(f"[Editor] 📄 Raw response {i}: {response_content[:200]}...")
             
-            finals.append(final_content)
+            try:
+                # Parse JSON response
+                parsed_result = json.loads(response_content)
+                
+                # Validate required fields
+                if "title" in parsed_result and "content" in parsed_result:
+                    final_article = {
+                        "title": parsed_result["title"].strip(),
+                        "content": parsed_result["content"].strip()
+                    }
+                    
+                    logger.info(f"[Editor] 📰 Title {i}: '{final_article['title']}'")
+                    logger.debug(f"[Editor] 📄 Content {i} preview: {final_article['content'][:150]}...")
+                    
+                    finals.append(final_article)
+                    
+                else:
+                    logger.warning(f"[Editor] ⚠️ Invalid JSON structure for draft {i}, missing title or content")
+                    # Fallback: create structure from raw response
+                    fallback_article = {
+                        "title": f"Breaking News: Article {i}",
+                        "content": response_content
+                    }
+                    finals.append(fallback_article)
+                    
+            except json.JSONDecodeError as json_error:
+                logger.error(f"[Editor] 💥 JSON parse error for draft {i}: {json_error}")
+                logger.debug(f"[Editor] 💥 Unparseable response: {response_content}")
+                
+                # Fallback: try to extract title and content manually
+                lines = response_content.split('\n')
+                title = f"Breaking: {lines[0][:50]}..." if lines else f"Article {i}"
+                content = response_content
+                
+                fallback_article = {
+                    "title": title,
+                    "content": content
+                }
+                finals.append(fallback_article)
+                logger.warning(f"[Editor] 🔄 Using fallback structure for draft {i}")
             
         except Exception as e:
             logger.error(f"[Editor] 💥 Error editing draft {i}: {e}")
             logger.error(f"[Editor] 💥 Error type: {type(e).__name__}")
-            logger.warning(f"[Editor] 🔄 Using unedited draft {i} as fallback")
-            finals.append(draft)
+            
+            # Ultimate fallback: use original draft with generated title
+            fallback_article = {
+                "title": f"Breaking News: Article {i}",
+                "content": draft
+            }
+            finals.append(fallback_article)
+            logger.warning(f"[Editor] 🔄 Using original draft {i} as ultimate fallback")
     
     logger.info(f"[Editor] ✅ Editing completed: {len(finals)} final articles created")
+    for i, final in enumerate(finals, 1):
+        logger.info(f"[Editor]   Final {i}: '{final['title']}' ({len(final['content'])} chars)")
+    
     logger.info("[Editor] 🏁 === EDITOR NODE COMPLETED ===")
     
     return {"finals": finals}
@@ -404,23 +467,31 @@ def post_node(state: PipelineState) -> PipelineState:
         logger.debug(f"[Post] 🔄 Processing item {i+1}/{max_items}")
         
         try:
+            # Extract final article data
+            final_article = finals[i] if i < len(finals) else {"title": "Untitled", "content": ""}
+            
             post = {
                 "topic": selected_topics[i],
+                "title": final_article.get("title", f"Article {i+1}"),  # NEW: SEO-optimized title
                 "draft": drafts[i],
-                "final": finals[i],
+                "final": final_article.get("content", ""),  # Extract content from finals
                 "sources": sources[i] if i < len(sources) else []
             }
             posts.append(post)
             
-            topic_preview = selected_topics[i][:50] + "..." if len(selected_topics[i]) > 50 else selected_topics[i]
-            logger.info(f"[Post] ✅ Post {i+1} created: '{topic_preview}'")
-            logger.debug(f"[Post]   - Draft length: {len(drafts[i])} chars")
-            logger.debug(f"[Post]   - Final length: {len(finals[i])} chars")
-            logger.debug(f"[Post]   - Sources count: {len(sources[i]) if i < len(sources) else 0}")
+            logger.info(f"[Post] ✅ Post {i+1} created:")
+            logger.info(f"[Post]   📰 Title: '{post['title']}'")
+            logger.info(f"[Post]   🎯 Topic: '{selected_topics[i][:50]}...'")
+            logger.debug(f"[Post]   📄 Draft length: {len(drafts[i])} chars")
+            logger.debug(f"[Post]   📄 Final length: {len(post['final'])} chars")
+            logger.debug(f"[Post]   🔗 Sources count: {len(post['sources'])}")
             
         except IndexError as e:
             logger.error(f"[Post] 💥 Index error at position {i}: {e}")
             logger.error(f"[Post] 💥 Available indices - topics:{len(selected_topics)-1}, drafts:{len(drafts)-1}, finals:{len(finals)-1}, sources:{len(sources)-1}")
+            break
+        except Exception as e:
+            logger.error(f"[Post] 💥 Unexpected error processing item {i}: {e}")
             break
     
     logger.info(f"[Post] ✅ Post creation completed: {len(posts)} posts created")
