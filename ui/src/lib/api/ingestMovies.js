@@ -57,8 +57,8 @@ async function createAgentPostPerMovie() {
         // Process each post from the agent response
         for (const post of agentResponse.data.posts) {
           const { error: upsertError } = await supabase.from("posts").upsert({
-            title: post.topic,
-            slug: slugify(post.topic),
+            title: post.title,
+            slug: slugify(post.title),
             content: post.final,
             draft: post.draft,
             sources: post.sources,
@@ -252,6 +252,18 @@ export async function handleIngestMovies(req, res) {
       console.log("Creating agent posts for new movies...");
       // Call the function to create agent posts for each movie
       createAgentPostPerMovie();
+    } catch (err) {
+      console.error("Error creating agent posts:", err);
+      await sendEmailNotification(
+        "Daily Movie Ingestion Report",
+        `Error creating agent posts: ${err.message}`
+      );
+    }
+
+    try {
+      console.log("Creating agent posts for new movies...");
+      // Call the function to create agent posts for each movie
+      await createAgentPostPerMovie();
     } catch (err) {
       console.error("Error creating agent posts:", err);
       await sendEmailNotification(
