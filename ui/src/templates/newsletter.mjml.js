@@ -21,7 +21,7 @@ export default `<mjml>
           color="#22223b"
           align="center"
           padding="28px 0 10px 0"
-          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           letter-spacing="0.5px"
           line-height="1.1"
           text-transform="none"
@@ -40,7 +40,7 @@ export default `<mjml>
           align="center"
           color="#fff"
           font-size="36px"
-          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           >{{ title }}</mj-text
         >
         <mj-button
@@ -63,7 +63,7 @@ export default `<mjml>
         <mj-text
           font-style="italic"
           font-size="20px"
-          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           color="#626262"
           >{{ summary }}</mj-text
         >
@@ -88,7 +88,7 @@ export default `<mjml>
           font-size="20px"
           font-weight="bold"
           color="#1a237e"
-          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           letter-spacing="0.5px"
           align="center"
           padding="0 0 12px 0"
@@ -97,7 +97,7 @@ export default `<mjml>
         <mj-text
           font-size="15px"
           color="#444"
-          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           padding="0 0 20px 0"
           line-height="1.6"
           letter-spacing="0.1px"
@@ -170,13 +170,13 @@ export default `<mjml>
         <mj-text
           font-style="italic"
           font-size="20px"
-          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           color="#626262"
           >Discover more</mj-text
         >
         <mj-text 
           color="#525252"
-          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, Ubuntu, sans-serif"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           >Stay tuned for more curated content and stories every day from My
           Daily Feed.</mj-text
         >
