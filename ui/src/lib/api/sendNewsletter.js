@@ -129,13 +129,15 @@ export async function handleSendNewsletter(req, res) {
           tag.display_name?.toLowerCase(),
         ])
       );
-      postsToSend = posts.filter((post) =>
-        post.tags.some(
-          (tag) =>
-            userTagNames.has(tag?.toLowerCase?.()) ||
-            userTagNames.has(tag.display_name?.toLowerCase?.())
+      postsToSend = posts
+        .filter((post) =>
+          post.tags.some(
+            (tag) =>
+              userTagNames.has(tag?.toLowerCase?.()) ||
+              userTagNames.has(tag.display_name?.toLowerCase?.())
+          )
         )
-      );
+        .slice(0, 7); // Limit to 7 posts
       console.log(
         `[Newsletter] User ${user.email} matched ${postsToSend.length} personalized posts.`
       );
