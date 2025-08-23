@@ -45,6 +45,7 @@ export default `<mjml>
         >
         <mj-button
           background-color="#007bff"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           color="#ffffff"
           href="{{ link }}"
           font-size="15px"
@@ -106,6 +107,7 @@ export default `<mjml>
         >
         <mj-button
           background-color="#007bff"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           color="#ffffff"
           href="{{ ../link }}/posts/{{ slug }}"
           font-size="15px"
@@ -123,6 +125,7 @@ export default `<mjml>
       <mj-column width="400px">
         <mj-button
           background-color="#F45E43"
+          font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
           color="#ffffff"
           href="{{ link }}"
           font-size="15px"
@@ -202,5 +205,6 @@ export default `<mjml>
           src="https://mydailyf.com/api/content/image-proxy?imgUrl=http://191n.mj.am/img/191n/3s/x0s.png"
         ></mj-image>
       </mj-column>
+      </mj-section>
   </mj-body>
 </mjml>`;
