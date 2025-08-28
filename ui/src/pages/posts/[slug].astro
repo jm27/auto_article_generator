@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { supabase } from "../../lib/supabase/supabaseClient"
+import { supabase } from "../../lib/supabase/supabaseClient";
+import { marked } from 'marked'; 
 import "../../styles/global.css";
 
 // Get the post by slug
@@ -15,8 +16,12 @@ if (error) {
     throw new Error(`Post not found: ${error.message}`);
 }
 
+// Convert Markdown content to HTML
+const htmlContent = post ? marked(post.content) : '';
+
 ---
-  <Layout>
+
+<Layout>
     <div class="bg-gray-50 min-h-screen flex flex-col">
     {
       post ? (
@@ -29,7 +34,7 @@ if (error) {
               Published on {new Date(post.published_at).toLocaleDateString()}
             </p>
           </header>
-                    {post.images && post.images[0] && (
+          {post.images && post.images[0] && (
             <div class="flex flex-col items-center gap-2 mb-4 w-full">
               <img
                 src={post.images[0]}
@@ -42,9 +47,7 @@ if (error) {
             </div>
           )}
           <section class="prose prose-base text-gray-800 sm:prose-lg lg:prose-xl">
-            <p class="mb-4 text-base leading-relaxed sm:text-lg">
-              {post.content}
-            </p>
+            <article set:html={htmlContent} />
           </section>
           {post.images && post.images[1] && (
             <div class="flex flex-col items-center gap-2 mb-4">
@@ -66,7 +69,7 @@ if (error) {
       )
     }
     </div>
-    </Layout>
+</Layout>
 
 <style>
     .rounded-poster {

@@ -112,6 +112,7 @@ Your task:
 2. Polish the draft into a concise, engaging article with clear structure, relatable analogies, and light humor
 3. Focus on storytelling, personality, and the human side of the news
 4. Avoid legal jargon and AI ethics debates
+5. Return the article in short paragraphs (2–4 sentences each), Add subheadings (##) for clarity.
 
 Output MUST be valid JSON in this exact format:
 {
