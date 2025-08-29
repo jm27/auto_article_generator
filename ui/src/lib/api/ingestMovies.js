@@ -251,18 +251,6 @@ export async function handleIngestMovies(req, res) {
     try {
       console.log("Creating agent posts for new movies...");
       // Call the function to create agent posts for each movie
-      createAgentPostPerMovie();
-    } catch (err) {
-      console.error("Error creating agent posts:", err);
-      await sendEmailNotification(
-        "Daily Movie Ingestion Report",
-        `Error creating agent posts: ${err.message}`
-      );
-    }
-
-    try {
-      console.log("Creating agent posts for new movies...");
-      // Call the function to create agent posts for each movie
       await createAgentPostPerMovie();
     } catch (err) {
       console.error("Error creating agent posts:", err);
