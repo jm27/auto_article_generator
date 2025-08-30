@@ -4,15 +4,18 @@ import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase/supabaseClient';
 import '../styles/global.css';
 import { fetchUserTagsByEmail, getUserEmailFromToken, fetchLatestPostsByUserTags } from '../utils/helpers';
+import { marked } from 'marked';
 
-const { cookies } = Astro;
+const { cookies, url } = Astro;
+
+// Get query parameters for filtering and pagination
+const selectedTag = url.searchParams.get('tag') || 'all';
+const searchQuery = url.searchParams.get('search') || '';
+const currentPage = parseInt(url.searchParams.get('page') || '1');
+const postsPerPage = 10;
+const offset = (currentPage - 1) * postsPerPage;
 
 const accessToken = cookies.get("sb-access-token");
-const refreshToken = cookies.get("sb-refresh-token");
-
-console.log('Access Token:', accessToken);
-console.log('Refresh Token:', refreshToken);
-
 
 const userEmail = await getUserEmailFromToken(accessToken?.value || "");
 const user_tags = userEmail ? await fetchUserTagsByEmail(userEmail, supabase) : [];
@@ -20,63 +23,360 @@ const latest_user_posts = user_tags?.length
   ? await fetchLatestPostsByUserTags(user_tags, supabase)
   : [];
 
+// Fetch all available tags for filter buttons
+const { data: tags, error: tagsError } = await supabase
+  .from('tags')
+  .select('*')
+  .order('name', { ascending: true });
 
-const { data: posts, error } = await supabase
-	.from('posts')
-	.select('*')
-	.limit(10)
-	.order('published_at', { ascending: false });
+// Get total count of ALL posts (for "All Posts" button)
+const { count: totalPostsCount } = await supabase
+  .from('posts')
+  .select('*', { count: 'exact', head: true });
 
+// Build posts query based on selected tag and search
+let postsQuery = supabase
+  .from('posts')
+  .select('*', { count: 'exact' })
+  .order('published_at', { ascending: false })
+  .range(offset, offset + postsPerPage - 1);
+
+// Apply tag filter if not "all"
+if (selectedTag !== 'all') {
+  postsQuery = postsQuery.contains('tags', [selectedTag]);
+}
+
+// Apply search filter if provided (search both title AND content)
+if (searchQuery) {
+  postsQuery = postsQuery.or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`);
+}
+
+const { data: posts, error, count } = await postsQuery;
+
+// Calculate pagination info
+const totalPages = Math.ceil((count || 0) / postsPerPage);
+const hasNextPage = currentPage < totalPages;
+const hasPreviousPage = currentPage > 1;
+
+// Generate page numbers for pagination
+const getPageNumbers = (current: number, total: number): (number | string)[] => {
+  const pages: (number | string)[] = [];
+  const maxVisible = 5;
+  
+  if (total <= maxVisible) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i);
+    }
+  } else {
+    if (current <= 3) {
+      for (let i = 1; i <= 4; i++) pages.push(i);
+      pages.push('...');
+      pages.push(total);
+    } else if (current >= total - 2) {
+      pages.push(1);
+      pages.push('...');
+      for (let i = total - 3; i <= total; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      pages.push('...');
+      for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+      pages.push('...');
+      pages.push(total);
+    }
+  }
+  
+  return pages;
+};
+
+const pageNumbers = getPageNumbers(currentPage, totalPages);
+
+// Helper function to build URL with parameters
+const buildUrl = (tag: string, page: number, search?: string) => {
+  const params = new URLSearchParams();
+  if (tag && tag !== 'all') params.set('tag', tag);
+  if (page && page !== 1) params.set('page', page.toString());
+  if (search) params.set('search', search);
+  const queryString = params.toString();
+  return queryString ? `/?${queryString}` : '/';
+};
+
+// Helper function to create content preview from markdown
+const createContentPreview = (content: string, maxLength: number = 120) => {
+  if (!content) return '';
+  
+  // Convert markdown to HTML first (synchronously)
+  const htmlContent = marked(content);
+
+  // Ensure htmlContent is a string before using replace
+  const htmlString = typeof htmlContent === 'string' ? htmlContent : '';
+  const textContent = htmlString.replace(/<[^>]*>/g, '');
+  
+  // Truncate if needed
+  if (textContent.length > maxLength) {
+    return textContent.slice(0, maxLength) + '...';
+  }
+  
+  return textContent;
+};
 ---
 
 <Layout>
- { userEmail && (
-  <>
-	<h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Your Feed</h1>
-	{error ? (
-	  <p class="text-red-600 text-center font-semibold">Error loading posts</p>
-	) : (
-	  <ul class="w-full max-w-full sm:max-w-2xl mx-auto divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4">
-		{latest_user_posts.map(p => (
-		  <li>
-			<a href={`/posts/${p.slug}`} class="flex items-start gap-4 py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded group no-underline">
-			  {p.images?.[0] && (
-				<img src={p.images[0]} alt={p.title} class="w-16 h-16 object-cover rounded-md border border-gray-200" loading="lazy" />
-			  )}
-			  <div class="flex-1 min-w-0">
-				<span class="block text-base sm:text-xl font-bold text-indigo-700 group-hover:underline truncate">
-				  {p.title}
-				</span>
-				<p class="text-gray-600 text-sm mt-1 line-clamp-2">{p.content?.slice(0, 120)}{p.content?.length > 120 ? '...' : ''}</p>
-			  </div>
-			</a>
-		  </li>
-		))}
-	  </ul>
-	)}
-  </>
- ) }
-
-  <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Latest Posts</h1>
-  {error ? (
-	<p class="text-red-600 text-center font-semibold">Error loading posts</p>
-  ) : (
-	<ul class="w-full max-w-full sm:max-w-2xl mx-auto divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4">
-	  {posts.map(p => (
-		<li>
-		  <a href={`/posts/${p.slug}`} class="flex items-start gap-4 py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded group no-underline">
-			{p.images?.[0] && (
-			  <img src={p.images[0]} alt={p.title} class="w-16 h-16 object-cover rounded-md border border-gray-200" loading="lazy" />
-			)}
-			<div class="flex-1 min-w-0">
-			  <span class="block text-base sm:text-xl font-bold text-indigo-700 group-hover:underline truncate">
-				{p.title}
-			  </span>
-			  <p class="text-gray-600 text-sm mt-1 line-clamp-2">{p.content?.slice(0, 120)}{p.content?.length > 120 ? '...' : ''}</p>
-			</div>
-		  </a>
-		</li>
-	  ))}
-	</ul>
+  {userEmail && latest_user_posts.length > 0 && (
+    <>
+      <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Your Feed</h1>
+      {error ? (
+        <p class="text-red-600 text-center font-semibold">Error loading posts</p>
+      ) : (
+        <ul class="w-full max-w-full sm:max-w-2xl mx-auto divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4 mb-8">
+          {latest_user_posts.map(p => (
+            <li>
+              <a href={`/posts/${p.slug}`} class="flex items-start gap-4 py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded group no-underline">
+                {p.images?.[0] && (
+                  <img src={p.images[0]} alt={p.title} class="w-16 h-16 object-cover rounded-md border border-gray-200" loading="lazy" />
+                )}
+                <div class="flex-1 min-w-0">
+                  <span class="block text-base sm:text-xl font-bold text-indigo-700 group-hover:underline truncate">
+                    {p.title}
+                  </span>
+                  <p class="text-gray-600 text-sm mt-1 line-clamp-2">{createContentPreview(p.content || '')}</p>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
   )}
+
+  <div class="w-full max-w-full sm:max-w-2xl mx-auto px-4">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 sm:mb-8 mt-4 sm:mt-6 text-center tracking-tight">Latest Posts</h1>
+    
+    <!-- Search Bar -->
+    <div class="mb-6">
+      <form method="GET" class="flex gap-2">
+        <!-- Preserve current tag filter -->
+        {selectedTag !== 'all' && (
+          <input type="hidden" name="tag" value={selectedTag} />
+        )}
+        
+        <div class="flex-1 relative">
+          <input 
+            type="text" 
+            name="search"
+            value={searchQuery}
+            placeholder="Search titles and content..."
+            class="w-full px-4 py-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+        
+        <button 
+          type="submit"
+          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+        >
+          Search
+        </button>
+        
+        {(searchQuery || selectedTag !== 'all') && (
+          <a 
+            href="/"
+            class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+          >
+            Clear
+          </a>
+        )}
+      </form>
+      
+      {searchQuery && (
+        <p class="mt-2 text-sm text-gray-600">
+          Searching titles and content for: <span class="font-semibold">"{searchQuery}"</span>
+        </p>
+      )}
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="mb-8">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Filter by Category</h2>
+      <div class="flex flex-wrap gap-2 sm:gap-3">
+        <!-- All Posts Button - Now shows correct total count -->
+        <a 
+          href={buildUrl('all', 1, searchQuery)}
+          class={`px-3 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
+            selectedTag === 'all' 
+              ? 'bg-indigo-600 text-white shadow-md transform scale-105' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+          }`}
+        >
+          All Posts ({totalPostsCount || 0})
+        </a>
+        
+        <!-- Tag Filter Buttons -->
+        {tags && tags.map(tag => (
+          <a 
+            href={buildUrl(tag.name, 1, searchQuery)}
+            class={`px-3 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
+              selectedTag === tag.name 
+                ? 'bg-indigo-600 text-white shadow-md transform scale-105' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+            }`}
+          >
+            {tag.display_name || tag.name}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Posts List -->
+    {error ? (
+      <p class="text-red-600 text-center font-semibold">Error loading posts</p>
+    ) : (
+      <>
+        {posts && posts.length > 0 ? (
+          <>
+            <div class="mb-4 text-sm text-gray-600 text-center">
+              Showing {offset + 1}-{Math.min(offset + postsPerPage, count || 0)} of {count || 0} posts
+              {selectedTag !== 'all' && ` filtered by "${selectedTag}"`}
+              {searchQuery && ` matching "${searchQuery}"`}
+            </div>
+            
+            <!-- Loading Animation Container for Visual Feedback -->
+            <div id="posts-container" class="transition-opacity duration-300">
+              <ul class="divide-y divide-gray-200 bg-white rounded-lg shadow-md p-2 sm:p-4 mb-8">
+                {posts.map(p => (
+                  <li>
+                    <a href={`/posts/${p.slug}`} class="flex items-start gap-4 py-3 sm:py-4 px-1 sm:px-2 hover:bg-gray-50 transition rounded group no-underline">
+                      {p.images?.[0] && (
+                        <img src={p.images[0]} alt={p.title} class="w-16 h-16 object-cover rounded-md border border-gray-200" loading="lazy" />
+                      )}
+                      <div class="flex-1 min-w-0">
+                        <span class="block text-base sm:text-xl font-bold text-indigo-700 group-hover:underline truncate">
+                          {p.title}
+                        </span>
+                        
+                        <!-- Render markdown content preview as HTML -->
+                        <div class="text-gray-600 text-sm mt-1 line-clamp-2" set:html={createContentPreview(p.content || '')} />
+                        
+                        {p.tags && p.tags.length > 0 && (
+                          <div class="flex flex-wrap gap-1 mt-2">
+                            {p.tags.slice(0, 3).map((tag: string) => (
+                              <span class="inline-block bg-gray-100 text-gray-600 px-2 py-1 text-xs rounded-full">
+                                {tag}
+                              </span>
+                            ))}
+                            {p.tags.length > 3 && (
+                              <span class="inline-block text-gray-500 text-xs py-1">
+                                +{p.tags.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <!-- Pagination -->
+            {totalPages > 1 && (
+              <nav class="flex items-center justify-center space-x-2 mb-8" aria-label="Pagination">
+                <!-- Previous Button -->
+                {hasPreviousPage ? (
+                  <a 
+                    href={buildUrl(selectedTag, currentPage - 1, searchQuery)}
+                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 hover:shadow-sm"
+                  >
+                    Previous
+                  </a>
+                ) : (
+                  <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">
+                    Previous
+                  </span>
+                )}
+
+                <!-- Page Numbers -->
+                {pageNumbers.map(pageNum => (
+                  pageNum === '...' ? (
+                    <span class="px-3 py-2 text-sm font-medium text-gray-500">...</span>
+                  ) : pageNum === currentPage ? (
+                    <span class="px-3 py-2 text-sm font-medium text-white bg-indigo-600 border border-indigo-600 rounded-md shadow-md">
+                      {pageNum}
+                    </span>
+                  ) : (
+                    <a 
+                      href={buildUrl(selectedTag, Number(pageNum), searchQuery)}
+                      class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 hover:shadow-sm"
+                    >
+                      {pageNum}
+                    </a>
+                  )
+                ))}
+
+                <!-- Next Button -->
+                {hasNextPage ? (
+                  <a 
+                    href={buildUrl(selectedTag, currentPage + 1, searchQuery)}
+                    class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 hover:shadow-sm"
+                  >
+                    Next
+                  </a>
+                ) : (
+                  <span class="px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100 border border-gray-200 rounded-md cursor-not-allowed">
+                    Next
+                  </span>
+                )}
+              </nav>
+            )}
+          </>
+        ) : (
+          <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p class="text-gray-500 text-lg">No posts found</p>
+            {(selectedTag !== 'all' || searchQuery) && (
+              <p class="text-gray-400 text-sm mt-2">
+                Try adjusting your filters or search terms
+              </p>
+            )}
+          </div>
+        )}
+      </>
+    )}
+  </div>
 </Layout>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Loading animation for better UX */
+  .loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  // Add subtle loading feedback when navigating
+  document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a[href*="tag="], a[href*="page="], a[href*="search="]');
+    const container = document.getElementById('posts-container');
+    
+    links.forEach(link => {
+      link.addEventListener('click', function() {
+        if (container) {
+          container.classList.add('loading');
+        }
+      });
+    });
+  });
+</script>
