@@ -65,6 +65,17 @@ console.log("Layout userName:", userName);
         <SubscribeForm client:visible />
       </footer>
     )}
+    <script>
+    import { trackPageView } from "../utils/analytics.js";
+
+    // Track first page load
+    trackPageView(window.location.pathname);
+
+    // Track client-side navigations (Astro View Transitions / SPA swaps)
+    window.addEventListener("astro:after-swap", () => {
+      trackPageView(window.location.pathname);
+    });
+  </script>
   </body>
 </html>
 
