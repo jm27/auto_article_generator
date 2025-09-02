@@ -76,6 +76,19 @@ console.log("Layout userName:", userName);
       trackPageView(window.location.pathname);
     });
   </script>
+  <script>
+  import { initScrollDepthTracking } from '../utils/analytics.js';
+  
+    // Initialize scroll tracking when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      const cleanup = initScrollDepthTracking();
+      
+      // Optional: cleanup when page unloads
+      window.addEventListener('beforeunload', () => {
+        if (typeof cleanup === 'function') cleanup();
+      });
+    });
+  </script>
   </body>
 </html>
 
