@@ -6,6 +6,8 @@ const SUBSCRIBE_URL = buildApiUrl("api/auth/subscribe");
 
 export default function SubscribeForm() {
   const [email, setEmail] = useState<string>("");
+  const [contactNews, setContactNews] = useState<boolean>(true);
+  const [partnerEmails, setPartnerEmails] = useState<boolean>(false);
   const [agreeToTerms, setAgreeToTerms] = useState<boolean>(false);
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">(
     "idle"
@@ -17,6 +19,8 @@ export default function SubscribeForm() {
     console.log("[SubscribeForm] Default prevented");
     console.log("[SubscribeForm] Subscribe form submitted");
     console.log("[SubscribeForm] Email:", email);
+    console.log("[SubscribeForm] Contact news:", contactNews);
+    console.log("[SubscribeForm] Partner emails:", partnerEmails);
     console.log("[SubscribeForm] Agree to terms:", agreeToTerms);
 
     setStatus("loading");
@@ -27,7 +31,12 @@ export default function SubscribeForm() {
       // Send as JSON data - but don't stringify, axios will do it
       const response = await axios.post(
         SUBSCRIBE_URL,
-        { email, agree_to_terms: agreeToTerms }, // Remove JSON.stringify
+        {
+          email,
+          contact_news: contactNews,
+          partner_emails: partnerEmails,
+          agree_to_terms: agreeToTerms,
+        }, // Remove JSON.stringify
         {
           headers: {
             "Content-Type": "application/json",
@@ -88,15 +97,64 @@ export default function SubscribeForm() {
         required
         className="w-full p-2 sm:p-3 text-base rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
-      <label className="flex items-center">
+
+      {/* Contact News Checkbox (Optional) */}
+      <label className="flex items-start gap-3 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={contactNews}
+          onChange={(e) => setContactNews(e.target.checked)}
+          className="mt-0.5 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+        />
+        <span>
+          Contact me with news and offers from My Daily Feed (optional)
+        </span>
+      </label>
+
+      {/* Partner Emails Checkbox (Optional) */}
+      <label className="flex items-start gap-3 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={partnerEmails}
+          onChange={(e) => setPartnerEmails(e.target.checked)}
+          className="mt-0.5 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+        />
+        <span>
+          Receive occasional emails from trusted partners of My Daily Feed
+          (optional)
+        </span>
+      </label>
+
+      {/* Terms and Conditions Checkbox (Required) */}
+      <label className="flex items-start gap-3 text-sm text-gray-700">
         <input
           type="checkbox"
           checked={agreeToTerms}
           onChange={(e) => setAgreeToTerms(e.target.checked)}
           required
-          className="mr-2"
+          className="mt-0.5 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
         />
-        I agree to the terms and conditions...
+        <span>
+          I am at least 16 years old and I agree to the{" "}
+          <a
+            href="/terms-and-conditions"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-indigo-600 hover:text-indigo-800 underline"
+          >
+            Terms & Conditions
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-indigo-600 hover:text-indigo-800 underline"
+          >
+            Privacy Policy
+          </a>
+          . (required)
+        </span>
       </label>
       <button
         type="submit"

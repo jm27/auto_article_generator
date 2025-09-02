@@ -1,0 +1,131 @@
+---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+---
+
+<Layout>
+  <div class="bg-gray-50 min-h-screen">
+    <div class="w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <article class="bg-white rounded-lg shadow-lg border border-gray-200 p-6 sm:p-8 lg:p-10">
+        <header class="mb-8 text-center border-b border-gray-100 pb-6">
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+            Privacy Policy
+          </h1>
+          <p class="text-gray-600">
+            Last updated: {new Date().toLocaleDateString()}
+          </p>
+        </header>
+
+        <div class="prose prose-lg max-w-none">
+          <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+            At <strong>My Daily Feed</strong>, your privacy matters to us.
+          </p>
+
+          <div class="space-y-8">
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">1</span>
+                Information We Collect
+              </h2>
+              <div class="ml-11 space-y-3">
+                <ul class="space-y-2">
+                  <li class="text-gray-700 leading-relaxed flex items-start">
+                    <span class="text-indigo-500 mr-2 mt-1">•</span>
+                    Email address (if you subscribe to our newsletter).
+                  </li>
+                  <li class="text-gray-700 leading-relaxed flex items-start">
+                    <span class="text-indigo-500 mr-2 mt-1">•</span>
+                    Basic usage data (page views, traffic analytics via Google Analytics).
+                  </li>
+                </ul>
+              </div>
+            </section>
+
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">2</span>
+                How We Use It
+              </h2>
+              <div class="ml-11 space-y-3">
+                <ul class="space-y-2">
+                  <li class="text-gray-700 leading-relaxed flex items-start">
+                    <span class="text-indigo-500 mr-2 mt-1">•</span>
+                    To send you our newsletter.
+                  </li>
+                  <li class="text-gray-700 leading-relaxed flex items-start">
+                    <span class="text-indigo-500 mr-2 mt-1">•</span>
+                    To improve our website and content.
+                  </li>
+                </ul>
+              </div>
+            </section>
+
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">3</span>
+                Sharing Data
+              </h2>
+              <div class="ml-11 space-y-3">
+                <ul class="space-y-2">
+                  <li class="text-gray-700 leading-relaxed flex items-start">
+                    <span class="text-indigo-500 mr-2 mt-1">•</span>
+                    We do not sell your personal data.
+                  </li>
+                  <li class="text-gray-700 leading-relaxed flex items-start">
+                    <span class="text-indigo-500 mr-2 mt-1">•</span>
+                    We may use trusted third-party services (e.g. email providers, analytics).
+                  </li>
+                </ul>
+              </div>
+            </section>
+
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">4</span>
+                Cookies
+              </h2>
+              <div class="ml-11">
+                <p class="text-gray-700 leading-relaxed">
+                  Our site uses cookies for analytics and improving user experience.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">5</span>
+                Your Rights
+              </h2>
+              <div class="ml-11 space-y-3">
+                <ul class="space-y-2">
+                  <li class="text-gray-700 leading-relaxed flex items-start">
+                    <span class="text-indigo-500 mr-2 mt-1">•</span>
+                    You can unsubscribe from emails anytime.
+                  </li>
+                  <li class="text-gray-700 leading-relaxed flex items-start">
+                    <span class="text-indigo-500 mr-2 mt-1">•</span>
+                    You can request your data to be deleted by contacting us.
+                  </li>
+                </ul>
+              </div>
+            </section>
+          </div>
+
+          <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+            <p class="text-gray-700 text-lg">
+              For any privacy concerns, please email:
+            </p>
+            <p class="mt-2">
+              <a 
+                href="mailto:privacy@mydailyfeed.com" 
+                class="text-indigo-600 hover:text-indigo-800 font-semibold text-lg underline transition-colors"
+              >
+                privacy@mydailyfeed.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</Layout>

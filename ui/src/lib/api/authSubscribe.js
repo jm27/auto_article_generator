@@ -11,9 +11,14 @@ export async function handleSubscribe(req, res) {
     return res.status(405).send("Method Not Allowed");
   }
 
-  const { email, agree_to_terms } = req.body;
+  const { email, contact_news, partner_emails, agree_to_terms } = req.body;
 
-  console.log("[authSubscribe] Parsed data:", { email, agree_to_terms });
+  console.log("[authSubscribe] Parsed data:", {
+    email,
+    contact_news,
+    partner_emails,
+    agree_to_terms,
+  });
 
   if (!email || !agree_to_terms) {
     console.log("[authSubscribe] Missing required fields");
@@ -21,10 +26,12 @@ export async function handleSubscribe(req, res) {
   }
 
   console.log("[authSubscribe] Creating subscription in Supabase...");
-  // Create user in Supabase
+  // Create user in Supabase with all preference fields
   const { error: signUpError } = await supabase.from("subscribers").upsert({
     email: email.trim(),
     subscription_status: Boolean(agree_to_terms),
+    contact_news: Boolean(contact_news),
+    partner_emails: Boolean(partner_emails),
     unsubscribe_token: uuidv4(),
   });
 
