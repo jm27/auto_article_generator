@@ -31,6 +31,43 @@ console.log("Layout userName:", userName);
     </script>
     <!-- End Google Tag Manager -->
 
+    <!-- ✅ Google Analytics via gtag.js -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5HFYBJ6V5S"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){window.dataLayer.push(arguments);}
+      window.gtag = window.gtag || gtag;
+      gtag('js', new Date());
+      gtag('config', 'G-5HFYBJ6V5S', {
+        page_path: window.location.pathname,
+      });
+
+      // --- Track Astro route changes ---
+      window.addEventListener('astro:after-swap', () => {
+        gtag('config', 'G-5HFYBJ6V5S', {
+          page_path: window.location.pathname,
+        });
+      });
+
+      // --- Scroll depth tracking ---
+      let scrollTracked = {25:false, 50:false, 75:false, 100:false};
+      window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrolled = (scrollTop / docHeight) * 100;
+
+        for (let depth of [25, 50, 75, 100]) {
+          if (!scrollTracked[depth] && scrolled >= depth) {
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: `${depth}%`,
+              value: depth,
+            });
+            scrollTracked[depth] = true;
+          }
+        }
+      });
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -65,30 +102,6 @@ console.log("Layout userName:", userName);
         <SubscribeForm client:visible />
       </footer>
     )}
-    <script>
-    import { trackPageView } from "../utils/analytics.js";
-
-    // Track first page load
-    trackPageView(window.location.pathname);
-
-    // Track client-side navigations (Astro View Transitions / SPA swaps)
-    window.addEventListener("astro:after-swap", () => {
-      trackPageView(window.location.pathname);
-    });
-  </script>
-  <script>
-  import { initScrollDepthTracking } from '../utils/analytics.js';
-  
-    // Initialize scroll tracking when page loads
-    document.addEventListener('DOMContentLoaded', () => {
-      const cleanup = initScrollDepthTracking();
-      
-      // Optional: cleanup when page unloads
-      window.addEventListener('beforeunload', () => {
-        if (typeof cleanup === 'function') cleanup();
-      });
-    });
-  </script>
   </body>
 </html>
 
