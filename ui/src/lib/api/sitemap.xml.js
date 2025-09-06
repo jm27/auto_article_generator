@@ -55,10 +55,7 @@ export async function generateSitemap(req, res) {
     `[sitemap.xml] Generated XML sitemap with ${xml.length} characters`
   );
   console.log("[sitemap.xml] Sitemap generation completed successfully");
+  res.setHeader("Content-Type", "application/xml");
 
-  return res.status(200).send(xml, {
-    headers: {
-      "Content-Type": "application/xml",
-    },
-  });
+  return res.status(200).send(xml);
 }
