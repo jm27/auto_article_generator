@@ -10,11 +10,10 @@
       "schedule": "25 20 * * *"
     }
   ],
-  "redirects": [
+  "rewrites": [
     {
       "source": "/sitemap.xml",
-      "destination": "/api/content/sitemap.xml",
-      "permanent": true
+      "destination": "/api/content/sitemap.xml"
     }
   ]
 }
