@@ -10,7 +10,7 @@
       "schedule": "25 20 * * *"
     }
   ],
-  "rewrites": [
+  "redirects": [
     {
       "source": "/sitemap.xml",
       "destination": "/api/content/sitemap.xml"
