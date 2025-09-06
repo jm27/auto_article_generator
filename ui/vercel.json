@@ -9,5 +9,12 @@
       "path": "/api/newsletter/send-newsletter",
       "schedule": "25 20 * * *"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/content/sitemap.xml",
+      "permanent": true
+    }
   ]
 }
