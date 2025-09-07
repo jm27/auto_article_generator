@@ -45,7 +45,13 @@ export async function generateSitemap(req, res) {
 
   const postUrlsXml = (posts || []).map((post) => {
     const escapedSlug = escapeXml(post.slug);
-    const postUrl = `<url><loc>https://www.mydailyf.com/posts/${escapedSlug}</loc></url>`;
+    const formattedDate = new Date(post.published_at)
+      .toISOString()
+      .split("T")[0];
+    const postUrl = `<url>
+                        <loc>https://www.mydailyf.com/posts/${escapedSlug}</loc>
+                        <lastmod>${formattedDate}</lastmod>
+                    </url>`;
     console.log(`[sitemap.xml] Adding post URL: /posts/${post.slug}`);
     return postUrl;
   });
