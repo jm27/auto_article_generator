@@ -8,7 +8,9 @@ function escapeXml(unsafe) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/:/g, "&#58;")
+    .replace(/;/g, "&#59;")
+    .replace(/'/g, "&#39;");
 }
 
 export async function generateSitemap(req, res) {
@@ -40,7 +42,7 @@ export async function generateSitemap(req, res) {
 
   // ✅ Build XML entries with proper escaping
   const staticUrlsXml = staticUrls.map(
-    (url) => `<url><loc>${escapeXml(url)}</loc></url>`
+    (url) => `<url><loc>${url}</loc><lastmod>2025-07-07</lastmod></url>`
   );
 
   const postUrlsXml = (posts || []).map((post) => {
