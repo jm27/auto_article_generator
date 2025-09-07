@@ -9,7 +9,6 @@ function escapeXml(unsafe) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/:/g, "&#58;")
-    .replace(/;/g, "&#59;")
     .replace(/'/g, "&#39;");
 }
 
