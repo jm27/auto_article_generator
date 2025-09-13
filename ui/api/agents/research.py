@@ -93,9 +93,10 @@ else:
 logger.info("[Config] 📝 Setting up prompts and regex patterns...")
 
 RESEARCH_PROMPT = """
-Find 5 current, newsworthy topics related to '{topic}'.
+Find 5 current, newsworthy topics strictly related to movies and the film industry, focusing on '{topic}'.
 Requirements:
-- Diverse perspectives, I am looking for information from 2025 onwards.
+- Only include topics directly connected to films, actors, directors, releases, box office, reviews, or movie culture.
+- Information must be from 2025 onwards.
 Output exactly 5 lines:
 1. Subtopic Title
 2. Subtopic Title
