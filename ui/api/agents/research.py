@@ -94,13 +94,22 @@ logger.info("[Config] 📝 Setting up prompts and regex patterns...")
 
 RESEARCH_PROMPT = """
 Find 5 current, newsworthy topics strictly related to movies and the film industry, focusing on '{topic}'.
+
 Requirements:
-- Only include topics directly connected to films, actors, directors, releases, box office, reviews, or movie culture.
-- Information must be from 2025 onwards.
-Output exactly 5 lines:
-1. Subtopic Title
-2. Subtopic Title
-...
+- Only include topics directly connected to films, actors, directors, releases, box office, reviews, or movie culture
+- Information must be from 2025 onwards
+- Each topic should include context and key details for article creation
+
+Output format - exactly 5 numbered entries with detailed information:
+1. [Main Title/Hook] - [Key details: what happened, who's involved, why it's significant, recent developments]
+2. [Main Title/Hook] - [Key details: what happened, who's involved, why it's significant, recent developments]
+3. [Main Title/Hook] - [Key details: what happened, who's involved, why it's significant, recent developments]
+... up to 5 entries
+
+Example format:
+1. Marvel's Secret Wars Movie Gets 2026 Release Date - Disney officially announces the highly anticipated crossover film featuring multiple Spider-Man actors, with the Russo Brothers returning to direct. The film will conclude Phase 6 of the MCU and is expected to be the biggest superhero movie event since Endgame.
+
+Make each entry substantial enough (50-100 words) to provide clear direction for content creation.
 """.strip()
 
 TOPICSELECTOR_SYSTEM = "Select exactly 2 most engaging positive topics and 1 odd/controversial topic from the provided list, keeping original wording and labeling the output clearly."
