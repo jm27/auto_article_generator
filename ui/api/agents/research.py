@@ -5,6 +5,7 @@ from typing import List, TypedDict
 import re
 from http.server import BaseHTTPRequestHandler
 from typing import TypedDict, List
+from datetime import datetime
 
 from langgraph.graph import StateGraph, END
 from openai import OpenAI
@@ -92,24 +93,40 @@ else:
 # ──────────────────────────────────────────────────────────────────────────────
 logger.info("[Config] 📝 Setting up prompts and regex patterns...")
 
+current_year = datetime.now().year
+
+
 RESEARCH_PROMPT = """
-Find 5 current, newsworthy topics strictly related to movies and the film industry, focusing on '{topic}'.
+Find 5 current, newsworthy topics strictly related to movies and the film industry that connect to the movie '{topic}', from {current_year} onwards.
+
+IMPORTANT: You MUST find movie/film industry news related to the movie '{topic}'. Consider:
+- News about the movie '{topic}' itself (sequels, reboots, anniversaries, streaming releases)
+- Actors from the movie '{topic}' (new projects, casting news, interviews, career updates)
+- Directors/crew from the movie '{topic}' (new projects, retrospectives, behind-the-scenes reveals)
+- Similar movies in the same genre/franchise as '{topic}' (box office comparisons, trend analysis)
+- Cultural impact or legacy of the movie '{topic}' (retrospectives, influence on new films)
+- Streaming platform news related to the movie '{topic}' (new releases, removals, exclusive content)
+- Box office data, reviews, or awards related to the movie '{topic}' or similar films
+- Remakes, spiritual successors, or films inspired by the movie '{topic}'
 
 Requirements:
-- Only include topics directly connected to films, actors, directors, releases, box office, reviews, or movie culture
-- Information must be from 2025 onwards
+- Every topic MUST have a clear, direct connection to the movie '{topic}' or the broader film industry
+- Information must be from {current_year} onwards (or recent developments about older films like '{topic}')
 - Each topic should include context and key details for article creation
+- Focus on news that movie fans aged 18-35 would find engaging
 
 Output format - exactly 5 numbered entries with detailed information:
-1. [Main Title/Hook] - [Key details: what happened, who's involved, why it's significant, recent developments]
-2. [Main Title/Hook] - [Key details: what happened, who's involved, why it's significant, recent developments]
-3. [Main Title/Hook] - [Key details: what happened, who's involved, why it's significant, recent developments]
-... up to 5 entries
+1. [Movie-focused Title/Hook] - [Key details: what movie/film news happened, which actors/directors/studios are involved, how it connects to '{topic}', why it's significant to movie fans, recent developments]
+2. [Movie-focused Title/Hook] - [Key details: what movie/film news happened, which actors/directors/studios are involved, how it connects to '{topic}', why it's significant to movie fans, recent developments]
+3. [Movie-focused Title/Hook] - [Key details: what movie/film news happened, which actors/directors/studios are involved, how it connects to '{topic}', why it's significant to movie fans, recent developments]
+...
 
-Example format:
-1. Marvel's Secret Wars Movie Gets 2026 Release Date - Disney officially announces the highly anticipated crossover film featuring multiple Spider-Man actors, with the Russo Brothers returning to direct. The film will conclude Phase 6 of the MCU and is expected to be the biggest superhero movie event since Endgame.
+Example format for the movie 'The Matrix':
+1. Keanu Reeves Confirms Matrix 5 in Early Development - Warner Bros announces a fifth Matrix film with Reeves and Carrie-Anne Moss returning, though without the Wachowski sisters directing. The studio is exploring the franchise's future after The Matrix Resurrections' mixed reception, with production targeting late 2025.
 
-Make each entry substantial enough (50-100 words) to provide clear direction for content creation.
+2. The Matrix Influences New Sci-Fi Blockbuster 'Nexus Protocol' - Director Denis Villeneuve credits The Matrix as inspiration for his upcoming cyberpunk thriller starring Oscar Isaac. The film explores similar themes of reality manipulation and features groundbreaking visual effects that pay homage to bullet-time sequences.
+
+Make each entry substantial (75-120 words) with enough movie-specific context for content creation.
 """.strip()
 
 TOPICSELECTOR_SYSTEM = "Select exactly 2 most engaging positive topics and 1 odd/controversial topic from the provided list, keeping original wording and labeling the output clearly."
