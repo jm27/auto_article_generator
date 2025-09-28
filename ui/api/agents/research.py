@@ -93,7 +93,6 @@ else:
 # ──────────────────────────────────────────────────────────────────────────────
 logger.info("[Config] 📝 Setting up prompts and regex patterns...")
 
-current_year = datetime.now().year
 
 
 RESEARCH_PROMPT = """
@@ -191,7 +190,10 @@ def research_node(state: PipelineState) -> PipelineState:
         logger.error("[Research] ❌ OpenAI client not available - cannot proceed")
         return {"raw_topics": []}
     
-    prompt = RESEARCH_PROMPT.format(topic=topic)
+    current_year = datetime.now().year
+    logger.info(f"[Research] 📅 Current year determined: {current_year}")
+    
+    prompt = RESEARCH_PROMPT.format(topic=topic, current_year=current_year)
     logger.debug(f"[Research] 📝 Formatted prompt ({len(prompt)} chars): {prompt[:200]}...")
 
     try:
