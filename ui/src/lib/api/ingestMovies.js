@@ -128,6 +128,7 @@ export async function handleIngestMovies(req, res) {
     const movieIds = movies.map((m) => m.id);
     console.log("Movie IDs to check in DB:", movieIds);
     const newMoviesAdded = [];
+    const failedMovies = [];
 
     // Query Supabase to check if movies already exist by IDs
     const { data: existingMovies, error: fetchError } = await supabase
@@ -194,6 +195,11 @@ export async function handleIngestMovies(req, res) {
 
         if (!summary) {
           console.error(`No summary generated for movie: ${movie.title}`);
+          failedMovies.push({
+            movieTitle: movie.title,
+            movieId: movie.id,
+            reason: "Summary generation returned empty response.",
+          });
           failed++;
           continue;
         }
@@ -219,6 +225,11 @@ export async function handleIngestMovies(req, res) {
 
         if (error) {
           console.error(`Error saving movie ${movie.title}:`, error);
+          failedMovies.push({
+            movieTitle: movie.title,
+            movieId: movie.id,
+            reason: error.message || "Supabase upsert failed.",
+          });
           failed++;
         } else {
           console.log(`Movie ${movie.title} saved successfully.`);
@@ -233,19 +244,40 @@ export async function handleIngestMovies(req, res) {
         }
       } catch (movieError) {
         console.error(`Error processing movie ${movie.title}:`, movieError);
+        failedMovies.push({
+          movieTitle: movie.title,
+          movieId: movie.id,
+          reason:
+            movieError instanceof Error
+              ? movieError.message
+              : String(movieError),
+        });
         failed++;
       }
     }
 
     // Send email notification after processing
+    const newMoviesSection = newMoviesAdded.length
+      ? newMoviesAdded
+          .map(
+            (movie) =>
+              `<strong>${movie.movieTitle}</strong> (${movie.movieId}) - ${movie.movieSummary}`
+          )
+          .join("<br>")
+      : "None";
+
+    const failedMoviesSection = failedMovies.length
+      ? failedMovies
+          .map(
+            (movie) =>
+              `<strong>${movie.movieTitle}</strong> (${movie.movieId}) - ${movie.reason}`
+          )
+          .join("<br>")
+      : "None";
+
     await sendEmailNotification(
       "Daily Movie Ingestion Report",
-      `Movies processed. Saved: ${saved}, Failed: ${failed}, New Movies Added: ${newMoviesAdded
-        .map(
-          (movie) =>
-            `<strong>${movie.movieTitle}</strong> (${movie.movieId}) - ${movie.movieSummary}`
-        )
-        .join("<br>")}`
+      `Movies processed. Saved: ${saved}, Failed: ${failed}<br><br><strong>New Movies Added:</strong><br>${newMoviesSection}<br><br><strong>Failed Movies:</strong><br>${failedMoviesSection}`
     );
 
     try {
