@@ -68,6 +68,7 @@ async function createAgentPostPerMovie() {
             parent_id: movie.id,
             is_movie: false,
             processed: true,
+            topic_ref: movie.title,
           });
 
           if (upsertError) {
@@ -219,6 +220,7 @@ export async function handleIngestMovies(req, res) {
             ),
             is_movie: true,
             processed: false,
+            topic_ref: movie.title,
           },
           { onConflict: ["id"] }
         );
