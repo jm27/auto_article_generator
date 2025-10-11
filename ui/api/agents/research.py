@@ -160,6 +160,28 @@ logger.debug(f"[Config] ✅ Research prompt length: {len(RESEARCH_PROMPT)} chars
 logger.debug(f"[Config] ✅ Topic selector system prompt length: {len(TOPICSELECTOR_SYSTEM)} chars")
 logger.debug(f"[Config] ✅ Regex pattern compiled: {TOPIC_ITEM_RE.pattern}")
 
+SEO_PROMPT = """
+You are an expert SEO copywriter specializing in entertainment news for pop-culture fans aged 18–35.
+Create:
+- An SEO-friendly, click-worthy title under 60 characters that clearly references the movie/topic.
+- A meta description under 155 characters that summarizes the article, highlights the hook, and includes the movie/topic plus one related keyword.
+
+The topic refers to the movie or subject that inspired the article.
+
+Use the input below to craft both fields.
+
+Input:
+Title: {title}
+Topic: {topic}
+Content: {content}
+
+Return JSON in this exact shape:
+{{
+  "seo_title": "...",
+  "seo_description": "..."
+}}"""
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # State Definitions
 # ──────────────────────────────────────────────────────────────────────────────
@@ -529,6 +551,103 @@ def post_node(state: PipelineState) -> PipelineState:
     
     return {"posts": posts}
 
+def seo_generator_node(state: PipelineState) -> PipelineState:
+    logger.info("[SEO] 🚀 === SEO GENERATOR NODE STARTING ===")
+    
+    posts = state.get("posts", [])
+    logger.info(f"[SEO] 📥 Received {len(posts)} posts for SEO enhancement")
+
+    if not posts:
+        logger.warning("[SEO] ⚠️ No posts available for SEO enhancement")
+        logger.warning("[SEO] 🏁 === SEO GENERATOR NODE COMPLETED (EMPTY) ===")
+        return {"posts": []}
+    
+    if not openai_client:
+        logger.error("[SEO] ❌ OpenAI client not available")
+        logger.error("[SEO] 🏁 === SEO GENERATOR NODE FAILED ===")
+        return {"posts": posts}
+    
+    updated_posts = []
+
+    for i, post in enumerate(posts, 1):
+        title = post.get("title", "")
+        topic = post.get("topic", "")
+        content = post.get("final", "")
+
+        logger.info(f"[SEO] 🔍 {i}/{len(posts)} Generating SEO for post titled: '{title[:50]}...'")
+        logger.debug(f"[SEO] 📄 Post {i} topic: {topic[:80]}...")
+        logger.debug(f"[SEO] 📄 Post {i} content length: {len(content)} chars")
+        
+        try:
+            logger.debug(f"[SEO] 📡 Making API call for SEO generation {i}...")
+            
+            prompt = SEO_PROMPT.format(title=title, topic=topic, content=content)
+            logger.debug(f"[SEO] 📝 SEO prompt ({len(prompt)} chars): {prompt[:200]}...")
+
+            resp = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are an expert SEO copywriter."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+            )
+
+            response_content = resp.choices[0].message.content.strip()
+            logger.info(f"[SEO] ✅ SEO {i} generated successfully ({len(response_content)} chars)")
+            logger.debug(f"[SEO] 📄 Raw response {i}: {response_content[:200]}...")
+
+            try:
+                # Remove markdown code blocks if present
+                if response_content.startswith("```"):
+                    lines = response_content.split('\n')
+                    response_content = '\n'.join(lines[1:-1]) if len(lines) > 2 else response_content
+                    response_content = response_content.strip()
+                    logger.debug(f"[SEO] 🔧 Removed markdown code blocks for post {i}")
+                
+                # Parse JSON response
+                seo_data = json.loads(response_content)
+                
+                # Validate required fields
+                if "seo_title" in seo_data and "seo_description" in seo_data:
+                    updated_post = {**post, **seo_data}
+                    
+                    logger.info(f"[SEO] 🏷️ SEO Title {i}: '{seo_data['seo_title']}'")
+                    logger.debug(f"[SEO] 📝 SEO Description {i}: {seo_data['seo_description'][:100]}...")
+                    
+                    updated_posts.append(updated_post)
+                    
+                else:
+                    logger.warning(f"[SEO] ⚠️ Invalid JSON structure for post {i}, missing seo_title or seo_description")
+                    # Fallback: use original post without SEO enhancement
+                    updated_posts.append(post)
+                    
+            except json.JSONDecodeError as json_error:
+                logger.error(f"[SEO] 💥 JSON parse error for post {i}: {json_error}")
+                logger.debug(f"[SEO] 💥 Unparseable response: {response_content}")
+                
+                # Fallback: use original post without SEO enhancement
+                updated_posts.append(post)
+                logger.warning(f"[SEO] 🔄 Using original post {i} without SEO enhancement")
+            
+        except Exception as e:
+            logger.error(f"[SEO] 💥 Error generating SEO for post {i}: {e}")
+            logger.error(f"[SEO] 💥 Error type: {type(e).__name__}")
+            
+            # Ultimate fallback: use original post
+            updated_posts.append(post)
+            logger.warning(f"[SEO] 🔄 Using original post {i} as ultimate fallback")
+    
+    logger.info(f"[SEO] ✅ SEO generation completed: {len(updated_posts)} posts processed")
+    for i, post in enumerate(updated_posts, 1):
+        has_seo = "seo_title" in post and "seo_description" in post
+        status = "✅ Enhanced" if has_seo else "⚠️ Original"
+        logger.info(f"[SEO]   Post {i}: {status} - '{post.get('title', 'Unknown')[:40]}...'")
+    
+    logger.info("[SEO] 🏁 === SEO GENERATOR NODE COMPLETED ===")
+            
+    return {"posts": updated_posts}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Build LangGraph
 # ──────────────────────────────────────────────────────────────────────────────
@@ -552,6 +671,9 @@ logger.debug("[Graph]   ✅ Added 'edit' node")
 graph.add_node("post", post_node)
 logger.debug("[Graph]   ✅ Added 'post' node")
 
+graph.add_node("seo_generator", seo_generator_node)
+logger.debug("[Graph]   ✅ Added 'seo_generator' node")
+
 logger.info("[Graph] 🔗 Adding edges to graph...")
 graph.add_edge("research", "select_topics")
 logger.debug("[Graph]   ✅ Added edge: research → select_topics")
@@ -565,8 +687,11 @@ logger.debug("[Graph]   ✅ Added edge: draft → edit")
 graph.add_edge("edit", "post")
 logger.debug("[Graph]   ✅ Added edge: edit → post")
 
-graph.add_edge("post", END)
-logger.debug("[Graph]   ✅ Added edge: post → END")
+graph.add_edge("post", "seo_generator")
+logger.debug("[Graph]   ✅ Added edge: post → seo_generator")
+
+graph.add_edge("seo_generator", END) 
+logger.debug("[Graph]   ✅ Added edge: seo_generator → END")
 
 logger.info("[Graph] 🚀 Setting entry point to 'research'...")
 graph.set_entry_point("research")

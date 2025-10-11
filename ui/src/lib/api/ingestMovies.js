@@ -69,6 +69,8 @@ async function createAgentPostPerMovie() {
             is_movie: false,
             processed: true,
             topic_ref: movie.title,
+            seo_title: post.seo_title,
+            seo_desc: post.seo_description,
           });
 
           if (upsertError) {
