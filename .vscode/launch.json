@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Research Agent",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/ui/api/agents/research.py",
+      "python": "${workspaceFolder}/ui/api/agents/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}/ui",
+      "envFile": "${workspaceFolder}/ui/.env.local",
+      "console": "integratedTerminal"
+    }
+  ]
+}
