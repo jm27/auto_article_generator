@@ -33,6 +33,13 @@ export async function handleGetMovies(req, res) {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
+  if (
+    !req.headers["x-api-key"] ||
+    req.headers["x-api-key"] !== process?.env?.MY_DAILY_API_KEY
+  ) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   try {
     const movies = await getSampleMovies();
     res.status(200).json(movies);

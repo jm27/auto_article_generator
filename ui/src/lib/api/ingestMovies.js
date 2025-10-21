@@ -38,6 +38,9 @@ async function createAgentPostPerMovie() {
           buildApiUrl("/api/agents/research"),
           {
             topic: movie.title,
+          },
+          {
+            headers: { "x-api-key": process?.env?.MY_DAILY_API_KEY || "" },
           }
         );
 
@@ -103,7 +106,9 @@ async function createAgentPostPerMovie() {
 
 async function getMovies() {
   try {
-    const response = await axios.get(buildApiUrl("/api/movies/get"));
+    const response = await axios.get(buildApiUrl("/api/movies/get"), {
+      headers: { "x-api-key": process?.env?.MY_DAILY_API_KEY || "" },
+    });
     return response.data;
   } catch (error) {
     console.error("Error calling get-movies API:", error);

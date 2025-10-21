@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import time
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler
 from typing import List, TypedDict
@@ -1227,7 +1228,26 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         logger.info("[Handler] 📨 === POST REQUEST STARTING ===")
-        start_time = logger.name  # Placeholder for timing
+        start_time = time.time()  # Placeholder for timing
+
+        logger.info("[Handler] ⏳ Request timing started")
+        logger.debug(f"[Handler] 🕒 Start time: {start_time}")
+
+        my_daily_api_key = self.headers.get("X-API-KEY", "")
+
+        MY_DAILY_API_KEY = os.getenv("MY_DAILY_API_KEY", "")
+
+        if not my_daily_api_key:
+            logger.error("[Handler] ❌ API key not configured")
+            self._send_error("API key not configured", status_code=500)
+            logger.error("[Handler] 🏁 === POST REQUEST FAILED (NO API KEY) ===")
+            return
+
+        if my_daily_api_key != MY_DAILY_API_KEY:
+            logger.error("[Handler] ❌ Invalid API key provided")
+            self._send_error("Invalid API key", status_code=403)
+            logger.error("[Handler] 🏁 === POST REQUEST FAILED (INVALID API KEY) ===")
+            return
 
         try:
             # Read request body
@@ -1291,6 +1311,10 @@ class handler(BaseHTTPRequestHandler):
             logger.info("[Handler] 📤 Sending success response...")
             self._send_success(response_data)
             logger.info("[Handler] 🏁 === POST REQUEST COMPLETED SUCCESSFULLY ===")
+            end_time = time.time()
+            logger.info(
+                f"[Handler] ⏱️ Total request time: {end_time - start_time:.2f} seconds"
+            )
 
         except json.JSONDecodeError as e:
             logger.error(f"[Handler] 💥 JSON decode error: {e}")
