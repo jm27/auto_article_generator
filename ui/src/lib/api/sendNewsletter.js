@@ -18,14 +18,15 @@ export async function handleSendNewsletter(req, res) {
   console.log("[Newsletter] Handler started");
 
   // Verify authorization header
-  const authHeader = req.headers.authorization || req.headers("authorization");
-  const cronSecret = process.env.CRON_SECRET || "";
-  const apiKeyHeader = req.headers.xApiKey || req.headers("x-api-key");
+  const headers = req.headers;
+  const authHeader = headers.authorization || headers["authorization"];
+  const apiKeyHeader = headers.xApiKey || headers["x-api-key"];
   const apiKey = process.env.MY_DAILY_API_KEY || "";
+  const cronSecret = process.env.CRON_SECRET || "";
 
   if (!cronSecret || !apiKey) {
     console.error(
-      "[Newsletter] CRON_SECRET or MY_DAILY_API_KEY is not set in environment variables"
+      "CRON_SECRET or MY_DAILY_API_KEY is not set in environment variables"
     );
     return res.status(403).json({
       error: "Forbidden",
@@ -34,7 +35,7 @@ export async function handleSendNewsletter(req, res) {
   }
 
   if (authHeader !== `Bearer ${cronSecret}` || apiKeyHeader !== apiKey) {
-    console.error("[Newsletter] Invalid authorization");
+    console.error("Invalid authorization");
     return res.status(401).json({
       error: "Unauthorized",
       message: "Invalid authorization, missing credentials",
