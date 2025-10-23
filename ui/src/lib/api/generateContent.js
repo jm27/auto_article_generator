@@ -13,7 +13,7 @@ export async function handleGenerateContent(req, res) {
     const apiKey = process.env.MY_DAILY_API_KEY || "";
     const cronSecret = process.env.CRON_SECRET || "";
 
-    if (!cronSecret || !apiKey) {
+    if (!cronSecret && !apiKey) {
       console.error(
         "CRON_SECRET or MY_DAILY_API_KEY is not set in environment variables"
       );
@@ -23,7 +23,10 @@ export async function handleGenerateContent(req, res) {
       });
     }
 
-    if (authHeader !== `Bearer ${cronSecret}` || apiKeyHeader !== apiKey) {
+    const isCronValid = authHeader === `Bearer ${cronSecret}`;
+    const isApiKeyValid = apiKeyHeader === apiKey;
+
+    if (!isCronValid && !isApiKeyValid) {
       console.error("Invalid authorization");
       return res.status(401).json({
         error: "Unauthorized",
