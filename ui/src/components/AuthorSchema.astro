@@ -1,0 +1,70 @@
+---
+/**
+ * AuthorSchema Component
+ * Generates Schema.org Person structured data for SEO
+ * Usage: <AuthorSchema author={author} />
+ */
+
+interface Props {
+  author?: {
+    directus_users: {
+      id: string;
+      first_name: string;
+      last_name: string;
+      email: string;
+      hil_profiles: {
+        bio: string;
+        profile_image: string;
+        verified_human?: boolean;
+        social_link?: string;
+      }[];
+    }[];
+  };
+}
+
+const { author } = Astro.props;
+
+// Handle nested arrays from Supabase and don't render if no author data
+const users = author?.directus_users;
+if (!users || (Array.isArray(users) && users.length === 0)) {
+  return null;
+}
+
+const user = Array.isArray(users) ? users[0] : users;
+
+if (!user) {
+  return null;
+}
+
+const profiles = user.hil_profiles;
+if (!profiles || (Array.isArray(profiles) && profiles.length === 0)) {
+  return null;
+}
+
+const profile = Array.isArray(profiles) ? profiles[0] : profiles;
+
+if (!profile) {
+  return null;
+}
+
+// Create full name and slug from author data
+const fullName = `${user.first_name} ${user.last_name}`;
+const authorSlug = fullName
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-|-$)/g, '');
+
+const siteUrl = Astro.url.origin;
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": fullName,
+  "description": profile.bio,
+  "image": profile.profile_image,
+  "url": `${siteUrl}/authors/${authorSlug}`,
+  ...(profile.social_link && { "sameAs": [profile.social_link] })
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

@@ -1,5 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import AuthorSchema from "../../components/AuthorSchema.astro";
+import AuthorBio from "../../components/AuthorBio.tsx";
 import { supabase } from "../../lib/supabase/supabaseClient";
 import { marked } from 'marked'; 
 import "../../styles/global.css";
@@ -9,12 +11,54 @@ const { slug } = Astro.params;
 
 const { data: post, error } = await supabase
     .from('posts')
-    .select('title, content, published_at, images, parent_id')
+    .select(`
+        id,
+        title, 
+        content, 
+        published_at, 
+        images, 
+        parent_id,
+        hil_assignee
+    `)
     .eq('slug', slug)
     .single();
+
+
 if (error) {
     throw new Error(`Post not found: ${error.message}`);
 }
+
+console.log('Post Data:', post);
+
+// Get post author details
+const { data: author, error: authorError } = await supabase
+    .from('posts')
+    .select(`
+      hil_assignee,
+      directus_users:hil_assignee (
+        id,
+        first_name,
+        last_name,
+        email,
+        hil_profiles (
+          bio,
+          profile_image,
+          social_link,
+          verified_human
+        )
+      )
+    `)
+    .eq('id', post.id)
+    .maybeSingle()
+
+if (authorError) {
+    console.error(`Error fetching author details: ${authorError.message}`);
+}
+
+if (author) {
+    console.log('Author Details:', author);
+}
+
 
 // Convert Markdown content to HTML
 const htmlContent = post ? marked(post.content) : '';
@@ -24,7 +68,7 @@ const htmlContent = post ? marked(post.content) : '';
 const { data: relatedPosts, error: relatedError } = await supabase
     .from('posts')
     .select('title, slug, content, images, published_at')
-    .eq('parent_id', post ? post.parent_id : null)
+    .eq('parent_id', post.parent_id ? post.parent_id : post.id)
     .neq('slug', slug) // Exclude current post
     .limit(2); // 👈 Change this to .limit(3) when you want to show 3 posts
 
@@ -34,6 +78,8 @@ if (relatedError) {
 
 console.log('Related Posts:', relatedPosts);
 ---
+
+<AuthorSchema author={author ?? undefined} />
 
 <Layout>
     <div class="bg-gray-50 min-h-screen flex flex-col">
@@ -70,7 +116,7 @@ console.log('Related Posts:', relatedPosts);
                 <img
                   src={post.images[1]}
                   alt={post.title + ' backdrop'}
-                  class="w-4/5 max-w-lg object-contain rounded-md mx-auto"
+                  class="w-4/5 max-w-lg object-contain rounded-md mx-auto mt-6"
                   style="max-height:400px;"
                   loading="lazy"
                 />
@@ -79,6 +125,11 @@ console.log('Related Posts:', relatedPosts);
             )}
           </div>
         </article>
+
+        {/* Author Bio Section */}
+        {author && (
+          <AuthorBio author={author} client:load />
+        )}
 
         {/* Related Posts Section */}
         {relatedPosts && relatedPosts.length > 0 && (
