@@ -18,7 +18,9 @@ const { data: post, error } = await supabase
         published_at, 
         images, 
         parent_id,
-        hil_assignee
+        hil_assignee,
+        hil_seo_title,
+        hil_seo_description
     `)
     .eq('slug', slug)
     .single();
@@ -77,11 +79,21 @@ if (relatedError) {
 }
 
 console.log('Related Posts:', relatedPosts);
+
+// SEO metadata
+const siteUrl = Astro.url.origin;
+const canonicalUrl = `${siteUrl}/posts/${slug}`;
+const ogImageUrl = post.images && post.images.length > 0 ? post.images[0] : undefined;
 ---
 
-<AuthorSchema author={author ?? undefined} />
+<AuthorSchema author={author ?? undefined} post={post} slug={slug ?? ''} />
 
-<Layout>
+<Layout 
+  seoTitle={post.hil_seo_title || post.title}
+  seoDescription={post.hil_seo_description}
+  ogImage={ogImageUrl}
+  canonicalUrl={canonicalUrl}
+>
     <div class="bg-gray-50 min-h-screen flex flex-col">
     {post && (
       <div class="w-full max-w-full sm:max-w-2xl lg:max-w-3xl mx-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

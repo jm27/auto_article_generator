@@ -3,7 +3,14 @@ import AuthWidget from "../components/AuthWidget";
 import SubscribeForm from "../components/SubscribeForm";
 import { isAccessTokenValid, getUserEmailFromToken } from "../utils/helpers";
 
-const { title = "" } = Astro.props;
+const { 
+  title = "", 
+  seoTitle,
+  seoDescription,
+  ogImage,
+  canonicalUrl
+} = Astro.props;
+
 const { cookies } = Astro;
 
 const accessToken = cookies.get("sb-access-token");
@@ -68,12 +75,19 @@ console.log("Layout userName:", userName);
         }
       });
     </script>
-    <meta property="og:title" content="My Daily Feed" />
-    <meta property="og:description" content="Personalized news and updates about movies and more." />
-    <meta property="og:url" content="https://www.mydailyf.com" />
+    
+    <!-- Canonical URL -->
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content={seoTitle || "My Daily Feed"} />
+    <meta property="og:description" content={seoDescription || "Personalized news and updates about movies and more."} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:url" content={canonicalUrl || "https://www.mydailyf.com"} />
     <meta property="og:type" content="website" />
-      <!-- ✅ Meta description for SEO -->
-  <meta name="description" content="My Daily Feed delivers fresh, personalized news and updates about movies, and more. Stay informed with engaging summaries and curated stories." />
+    
+    <!-- Meta description for SEO -->
+    <meta name="description" content={seoDescription || "My Daily Feed delivers fresh, personalized news and updates about movies, and more. Stay informed with engaging summaries and curated stories."} />
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />

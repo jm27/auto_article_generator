@@ -1,8 +1,8 @@
 ---
 /**
  * AuthorSchema Component
- * Generates Schema.org Person structured data for SEO
- * Usage: <AuthorSchema author={author} />
+ * Generates Schema.org BlogPosting structured data for SEO
+ * Usage: <AuthorSchema author={author} post={post} slug={slug} />
  */
 
 interface Props {
@@ -20,51 +20,74 @@ interface Props {
       }[];
     }[];
   };
+  post: {
+    title: string;
+    content: string;
+    images?: string[];
+    published_at: string;
+  };
+  slug: string;
 }
 
-const { author } = Astro.props;
+const { author, post, slug } = Astro.props;
 
-// Handle nested arrays from Supabase and don't render if no author data
+// Handle nested arrays from Supabase
 const users = author?.directus_users;
-if (!users || (Array.isArray(users) && users.length === 0)) {
-  return null;
+const user = users && Array.isArray(users) && users.length > 0 ? users[0] : null;
+const profiles = user?.hil_profiles;
+const profile = profiles && Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
+
+// Create full name and slug from author data (if available)
+let fullName = "HIL Blog";
+let authorSlug = "hil-blog";
+if (user) {
+  fullName = `${user.first_name} ${user.last_name}`;
+  authorSlug = fullName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }
 
-const user = Array.isArray(users) ? users[0] : users;
-
-if (!user) {
-  return null;
-}
-
-const profiles = user.hil_profiles;
-if (!profiles || (Array.isArray(profiles) && profiles.length === 0)) {
-  return null;
-}
-
-const profile = Array.isArray(profiles) ? profiles[0] : profiles;
-
-if (!profile) {
-  return null;
-}
-
-// Create full name and slug from author data
-const fullName = `${user.first_name} ${user.last_name}`;
-const authorSlug = fullName
-  .toLowerCase()
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/(^-|-$)/g, '');
+// Extract excerpt from content (first 160 characters)
+const excerpt = post.content
+  .replace(/[#*_\[\]]/g, '') // Remove markdown symbols
+  .slice(0, 160)
+  .trim() + '...';
 
 const siteUrl = Astro.url.origin;
+const fullUrl = `${siteUrl}/posts/${slug}`;
 
 const structuredData = {
   "@context": "https://schema.org",
-  "@type": "Person",
-  "name": fullName,
-  "description": profile.bio,
-  "image": profile.profile_image,
-  "url": `${siteUrl}/authors/${authorSlug}`,
-  ...(profile.social_link && { "sameAs": [profile.social_link] })
+  "@type": "BlogPosting",
+  "headline": post.title,
+  "description": excerpt,
+  "image": post.images && post.images.length > 0 ? post.images[0] : undefined,
+  "author": {
+    "@type": "Person",
+    "name": fullName,
+    ...(profile && {
+      "description": profile.bio,
+      "image": profile.profile_image,
+      "url": `${siteUrl}/authors/${authorSlug}`,
+      ...(profile.social_link && { "sameAs": [profile.social_link] })
+    })
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "HIL Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${siteUrl}/logo.png`
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": fullUrl
+  },
+  "datePublished": post.published_at,
+  "dateModified": post.published_at
 };
 ---
 
-<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+<script type="application/ld+json" set:html={JSON.stringify(structuredData, null, 2)} />

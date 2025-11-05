@@ -62,6 +62,9 @@ export default function AuthorBio({ author }: AuthorBioProps) {
             )}
           </div>
           <p className="text-sm text-gray-600 leading-relaxed">{profile.bio}</p>
+          <p className="text-xs text-gray-500 italic mt-3 pt-3 border-t border-gray-100">
+            This article was assisted by AI and reviewed by {fullName}.
+          </p>
         </div>
       </div>
     </section>
