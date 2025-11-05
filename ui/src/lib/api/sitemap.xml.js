@@ -17,7 +17,7 @@ export async function generateSitemap(req, res) {
 
   const { data: posts, error } = await supabase
     .from("posts")
-    .select("slug, published_at")
+    .select("slug, published_at, hil_published_at")
     .order("published_at", { ascending: false });
 
   if (error) {
@@ -29,19 +29,44 @@ export async function generateSitemap(req, res) {
     );
   }
 
-  // 🔗 Hardcoded static URLs
+  // 🔗 Hardcoded static URLs with priority and changefreq
   const staticUrls = [
-    "https://www.mydailyf.com/",
-    "https://www.mydailyf.com/privacy-policy/",
-    "https://www.mydailyf.com/terms-and-conditions/",
-    "https://www.mydailyf.com/thank-you/",
+    {
+      url: "https://www.mydailyf.com/",
+      lastmod: "2025-07-07",
+      changefreq: "daily",
+      priority: "1.0",
+    },
+    {
+      url: "https://www.mydailyf.com/privacy-policy/",
+      lastmod: "2025-07-07",
+      changefreq: "yearly",
+      priority: "0.3",
+    },
+    {
+      url: "https://www.mydailyf.com/terms-and-conditions/",
+      lastmod: "2025-07-07",
+      changefreq: "yearly",
+      priority: "0.3",
+    },
+    {
+      url: "https://www.mydailyf.com/thank-you/",
+      lastmod: "2025-07-07",
+      changefreq: "monthly",
+      priority: "0.2",
+    },
   ];
 
   console.log(`[sitemap.xml] Including ${staticUrls.length} static URLs`);
 
   // ✅ Build XML entries with proper escaping
   const staticUrlsXml = staticUrls.map(
-    (url) => `<url><loc>${url}</loc><lastmod>2025-07-07</lastmod></url>`
+    (item) => `<url>
+    <loc>${item.url}</loc>
+    <lastmod>${item.lastmod}</lastmod>
+    <changefreq>${item.changefreq}</changefreq>
+    <priority>${item.priority}</priority>
+  </url>`
   );
 
   const postUrlsXml = (posts || []).map((post) => {
@@ -49,10 +74,26 @@ export async function generateSitemap(req, res) {
     const formattedDate = new Date(post.published_at)
       .toISOString()
       .split("T")[0];
+    const updatedDate = new Date(post.hil_published_at || post.published_at)
+      .toISOString()
+      .split("T")[0];
+
+    // Calculate how fresh the post is to determine priority
+    const daysSincePublished = Math.floor(
+      (Date.now() - new Date(post.published_at).getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    // Newer posts get higher priority (0.8 for < 7 days, 0.6 for < 30 days, 0.5 for older)
+    const priority =
+      daysSincePublished < 7 ? "0.8" : daysSincePublished < 30 ? "0.6" : "0.5";
+
     const postUrl = `<url>
-                        <loc>https://www.mydailyf.com/posts/${escapedSlug}</loc>
-                        <lastmod>${formattedDate}</lastmod>
-                    </url>`;
+    <loc>https://www.mydailyf.com/posts/${escapedSlug}</loc>
+    <lastmod>${updatedDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
     console.log(`[sitemap.xml] Adding post URL: /posts/${post.slug}`);
     return postUrl;
   });
