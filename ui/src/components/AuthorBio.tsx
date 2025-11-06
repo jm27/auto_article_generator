@@ -32,6 +32,12 @@ export default function AuthorBio({ author }: AuthorBioProps) {
   const { first_name, last_name } = user;
   const fullName = `${first_name} ${last_name}`;
 
+  // Create author slug for profile link
+  const authorSlug = fullName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
   return (
     <section className="bg-white rounded-lg shadow-lg border border-gray-200 mb-8 p-6">
       <div className="flex items-start gap-4">
@@ -43,7 +49,14 @@ export default function AuthorBio({ author }: AuthorBioProps) {
         />
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-bold text-lg text-gray-900">{fullName}</h3>
+            <h3 className="font-bold text-lg text-gray-900">
+              <a
+                href={`/authors/${authorSlug}`}
+                className="hover:text-indigo-600 transition-colors duration-200"
+              >
+                {fullName}
+              </a>
+            </h3>
             {profile.verified_human && (
               <span className="inline-flex items-center gap-1 text-xs bg-green-50 text-green-700 font-medium px-2 py-1 rounded-full border border-green-200">
                 <svg

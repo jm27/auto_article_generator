@@ -6,12 +6,14 @@ import "../../styles/global.css";
 // Get the author slug from URL
 const { slug } = Astro.params;
 
+console.log('Author Slug:', slug);
 // Parse slug to get first and last name
 // Format: "john-doe" -> ["john", "doe"]
 const nameParts = slug?.split('-') || [];
 const firstName = nameParts[0] || '';
 const lastName = nameParts.slice(1).join('-') || ''; // Handle multi-part last names
 
+console.log('Parsed Name:', { firstName, lastName });
 // Fetch author from directus_users by matching first_name and last_name
 const { data: users, error: userError } = await supabase
   .from('directus_users')
@@ -31,16 +33,29 @@ const { data: users, error: userError } = await supabase
   .ilike('last_name', lastName)
   .limit(1);
 
+console.log('Fetched Users:', users);
+
 if (userError) {
   console.error('Error fetching author:', userError);
 }
 
 const user = users && users.length > 0 ? users[0] : null;
-const profile = user?.hil_profiles && Array.isArray(user.hil_profiles) && user.hil_profiles.length > 0 
-  ? user.hil_profiles[0] 
-  : null;
+
+// Handle hil_profiles - it can be an object, array, or null
+let profile = null;
+if (user?.hil_profiles) {
+  profile = Array.isArray(user.hil_profiles) && user.hil_profiles.length > 0
+    ? user.hil_profiles[0]
+    : !Array.isArray(user.hil_profiles)
+    ? user.hil_profiles
+    : null;
+}
+
+console.log('User:', user);
+console.log('Profile:', profile);
 
 if (!user || !profile) {
+  console.error('Author not found or missing profile data');
   return Astro.redirect('/404');
 }
 
