@@ -66,6 +66,7 @@ const structuredData = {
   "author": {
     "@type": "Person",
     "name": fullName,
+    "url": `${siteUrl}/authors/${authorSlug}`,
     ...(profile && {
       "description": profile.bio,
       "image": profile.profile_image,
