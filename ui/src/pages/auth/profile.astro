@@ -1,0 +1,39 @@
+---
+import TagSelection from '../../components/TagSelection';
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase/supabaseClient';
+import { isAccessTokenValid } from '../../utils/helpers';
+
+  // check if cookies are there 
+  const { cookies, redirect } = Astro;
+  const accessToken = cookies.get('sb-access-token');
+  const tokenValue = accessToken?.value;
+  const isTokenValid = await isAccessTokenValid(tokenValue);
+
+  if (!isTokenValid) {
+    console.log('Token is not valid, redirecting to signin page');
+    return redirect('/auth/signin');
+  } else {
+    console.log('Token is valid, proceeding to fetch tags');
+  }
+
+  const { data: tags, error } = await supabase
+    .from('tags')
+    .select('*')
+    .order('name', { ascending: true });
+
+  console.log('Tags fetched:', tags);
+
+  if (error) {
+    console.error('Error fetching tags:', error);
+  }
+
+  const allTags = tags || [];
+
+---
+<Layout>
+  <div class="w-full max-w-full sm:max-w-2xl mx-auto px-2 sm:px-4 py-4 sm:py-8 flex flex-col items-center rounded-lg bg-white shadow">
+    <h1 class="text-2xl sm:text-4xl font-extrabold text-gray-900 mb-6 mt-4 text-center tracking-tight">Profile Page</h1>
+    <TagSelection client:load allTags={allTags} loading={false} />
+  </div>
+</Layout>

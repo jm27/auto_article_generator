@@ -1,0 +1,94 @@
+---
+/**
+ * AuthorSchema Component
+ * Generates Schema.org BlogPosting structured data for SEO
+ * Usage: <AuthorSchema author={author} post={post} slug={slug} />
+ */
+
+interface Props {
+  author?: {
+    directus_users: {
+      id: string;
+      first_name: string;
+      last_name: string;
+      email: string;
+      hil_profiles: {
+        bio: string;
+        profile_image: string;
+        verified_human?: boolean;
+        social_link?: string;
+      }[];
+    }[];
+  };
+  post: {
+    title: string;
+    content: string;
+    images?: string[];
+    published_at: string;
+  };
+  slug: string;
+}
+
+const { author, post, slug } = Astro.props;
+
+// Handle nested arrays from Supabase
+const users = author?.directus_users;
+const user = users && Array.isArray(users) && users.length > 0 ? users[0] : null;
+const profiles = user?.hil_profiles;
+const profile = profiles && Array.isArray(profiles) && profiles.length > 0 ? profiles[0] : null;
+
+// Create full name and slug from author data (if available)
+let fullName = "HIL Blog";
+let authorSlug = "hil-blog";
+if (user) {
+  fullName = `${user.first_name} ${user.last_name}`;
+  authorSlug = fullName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+// Extract excerpt from content (first 160 characters)
+const excerpt = post.content
+  .replace(/[#*_\[\]]/g, '') // Remove markdown symbols
+  .slice(0, 160)
+  .trim() + '...';
+
+const siteUrl = Astro.url.origin;
+const fullUrl = `${siteUrl}/posts/${slug}`;
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": post.title,
+  "description": excerpt,
+  "image": post.images && post.images.length > 0 ? post.images[0] : undefined,
+  "author": {
+    "@type": "Person",
+    "name": fullName,
+    "url": `${siteUrl}/authors/${authorSlug}`,
+    ...(profile && {
+      "description": profile.bio,
+      "image": profile.profile_image,
+      "url": `${siteUrl}/authors/${authorSlug}`,
+      ...(profile.social_link && { "sameAs": [profile.social_link] })
+    })
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "HIL Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${siteUrl}/logo.png`
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": fullUrl
+  },
+  "datePublished": post.published_at,
+  "dateModified": post.published_at
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(structuredData, null, 2)} />

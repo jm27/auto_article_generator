@@ -1,37 +1,139 @@
 ---
 import AuthWidget from "../components/AuthWidget";
 import SubscribeForm from "../components/SubscribeForm";
+import { isAccessTokenValid, getUserEmailFromToken } from "../utils/helpers";
+
+const { 
+  title = "", 
+  seoTitle,
+  seoDescription,
+  ogImage,
+  canonicalUrl
+} = Astro.props;
+
+const { cookies } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const tokenValue = accessToken?.value || "";
+const isTokenValid = await isAccessTokenValid(tokenValue);
+const userName = await getUserEmailFromToken(tokenValue);
+
+console.log("Layout isTokenValid:", isTokenValid);
+console.log("Layout userName:", userName);
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>My Daily Feed</title>
-	</head>
-	<body class="bg-gray-50 min-h-screen flex flex-col">
-		<header class="bg-white shadow-md py-4 px-2 sm:py-6 sm:px-4 flex flex-col items-center border-b border-gray-200 w-full">
-			<h2 class="text-2xl sm:text-3xl font-extrabold text-indigo-700 tracking-tight mb-2 text-center">My Daily Feed</h2>
-			<!-- client:load ensures React Hydrates only on the client -->
-			<AuthWidget client:load />
-		</header>
-		<main class="flex-1 w-full max-w-full sm:max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
-			<slot />
-		</main>
-		<footer class="bg-white border-t border-gray-200 py-4 px-2 sm:py-6 sm:px-4 flex flex-col items-center mt-8 w-full">
-			<SubscribeForm client:load />
-		</footer>
-	</body>
+  <head>
+    <!-- ✅ Google Tag Manager -->
+    <script is:inline>
+      (function(w,d,s,l,i){w[l]=w[l]||[];
+      w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true;
+      j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+      f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-MRZSPBPK');
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <!-- ✅ Google Analytics via gtag.js -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5HFYBJ6V5S"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){window.dataLayer.push(arguments);}
+      window.gtag = window.gtag || gtag;
+      gtag('js', new Date());
+      gtag('config', 'G-5HFYBJ6V5S', {
+        page_path: window.location.pathname,
+      });
+
+      // --- Track Astro route changes ---
+      window.addEventListener('astro:after-swap', () => {
+        gtag('config', 'G-5HFYBJ6V5S', {
+          page_path: window.location.pathname,
+        });
+      });
+
+      // --- Scroll depth tracking ---
+      let scrollTracked = {25:false, 50:false, 75:false, 100:false};
+      window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrolled = (scrollTop / docHeight) * 100;
+
+        for (let depth of [25, 50, 75, 100]) {
+          if (!scrollTracked[depth] && scrolled >= depth) {
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: `${depth}%`,
+              value: depth,
+            });
+            scrollTracked[depth] = true;
+          }
+        }
+      });
+    </script>
+    
+    <!-- Canonical URL -->
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    
+    <!-- RSS Feed Auto-discovery -->
+    <link rel="alternate" type="application/rss+xml" title="My Daily Feed RSS" href="https://www.mydailyf.com/api/rss/feed" />
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content={seoTitle || "My Daily Feed"} />
+    <meta property="og:description" content={seoDescription || "Personalized news and updates about movies and more."} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta property="og:url" content={canonicalUrl || "https://www.mydailyf.com"} />
+    <meta property="og:type" content="website" />
+    
+    <!-- Meta description for SEO -->
+    <meta name="description" content={seoDescription || "My Daily Feed delivers fresh, personalized news and updates about movies, and more. Stay informed with engaging summaries and curated stories."} />
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>My Daily Feed</title>
+  </head>
+
+  <body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- ✅ Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MRZSPBPK"
+        height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <header class="bg-white shadow-md py-4 px-2 sm:py-6 sm:px-4 flex flex-col items-center border-b border-gray-200 w-full">
+      <a href="/" class="block w-fit mx-auto">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-indigo-700 tracking-tight mb-2 text-center hover:underline cursor-pointer">
+          My Daily Feed {title ? `- ${title}` : ""}
+        </h2>
+      </a>
+      <h3 class="text-lg sm:text-xl text-gray-700 mb-4 text-center">Your personalized news and updates</h3>
+      <AuthWidget client:load isTokenValid={isTokenValid} userName={userName} />
+    </header>
+
+    <main class="flex-1 w-full max-w-full sm:max-w-4xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      <slot />
+    </main>
+
+    {Astro.url.pathname !== "/thank-you" && (
+      <footer class="bg-white border-t border-gray-200 py-4 px-2 sm:py-6 sm:px-4 flex flex-col items-center w-full">
+        <SubscribeForm client:visible />
+      </footer>
+    )}
+  </body>
 </html>
 
 <style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
 </style>

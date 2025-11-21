@@ -10,23 +10,30 @@
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
-    "@astrojs/vercel": "^8.2.1",
+    "@astrojs/sitemap": "^3.5.1",
+    "@astrojs/vercel": "^8.2.5",
     "@supabase/supabase-js": "^2.50.1",
     "@tailwindcss/vite": "^4.1.11",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "astro": "^5.10.1",
+    "astro": "^5.12.9",
     "axios": "^1.10.0",
     "fs": "^0.0.1-security",
     "handlebars": "^4.7.8",
+    "html-to-text": "^9.0.5",
+    "marked": "^16.2.1",
     "mjml": "^4.15.3",
     "openai": "^5.8.2",
     "path": "^0.12.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "resend": "^4.6.0"
+    "resend": "^4.6.0",
+    "svix": "^1.69.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/html-to-text": "^9.0.4",
+    "@types/mjml": "^4.7.4",
     "@playwright/test": "^1.56.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

@@ -1,10 +1,7 @@
 import axios from "axios";
 import { supabase } from "../lib/supabase/supabaseClient.ts";
 import { getSampleMovies } from "./fetch-movies";
-const VERCEL_SITE_URL = import.meta.env.PUBLIC_VERCEL_PROJECT_PRODUCTION_URL;
-const SITE_URL = VERCEL_SITE_URL
-  ? `https://${VERCEL_SITE_URL}`
-  : import.meta.env.SITE_URL;
+import { buildApiUrl } from "../utils/baseUrl";
 
 /**
  * Generates and saves movies to Supabase.
@@ -56,7 +53,7 @@ export async function generateAndSaveMovies() {
   for (const movie of newMovies) {
     console.log(`Processing movie: ${movie.title} (ID: ${movie.id})`);
     // Generate Summary
-    const response = await axios.post(`${SITE_URL}/api/generate-content`, {
+    const response = await axios.post(buildApiUrl("/api/content/generate"), {
       title: movie.title,
       synopsis: movie.synopsis,
       reviews: movie.reviews,

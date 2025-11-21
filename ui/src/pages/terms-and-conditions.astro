@@ -1,0 +1,104 @@
+---
+import Layout from '../layouts/Layout.astro';
+import '../styles/global.css';
+---
+
+<Layout>
+  <div class="bg-gray-50 min-h-screen">
+    <div class="w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <article class="bg-white rounded-lg shadow-lg border border-gray-200 p-6 sm:p-8 lg:p-10">
+        <header class="mb-8 text-center border-b border-gray-100 pb-6">
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+            Terms & Conditions
+          </h1>
+          <p class="text-gray-600">
+            Last updated: 9/2/2025
+          </p>
+        </header>
+
+        <div class="prose prose-lg max-w-none">
+          <p class="text-lg text-gray-700 mb-8 leading-relaxed">
+            Welcome to <strong>My Daily Feed</strong>!
+          </p>
+
+          <p class="text-gray-700 mb-8 leading-relaxed">
+            By using this website, you agree to the following terms:
+          </p>
+
+          <div class="space-y-8">
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">1</span>
+                Content
+              </h2>
+              <div class="ml-11 space-y-3">
+                <p class="text-gray-700 leading-relaxed">
+                  All content is provided for informational and entertainment purposes only.
+                </p>
+                <p class="text-gray-700 leading-relaxed">
+                  We do not guarantee accuracy, completeness, or reliability of the information.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">2</span>
+                Subscriptions
+              </h2>
+              <div class="ml-11 space-y-3">
+                <p class="text-gray-700 leading-relaxed">
+                  If you subscribe to our newsletter, you agree to receive periodic emails from us.
+                </p>
+                <p class="text-gray-700 leading-relaxed">
+                  You may unsubscribe at any time by clicking the link in the email.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">3</span>
+                Use of Website
+              </h2>
+              <div class="ml-11 space-y-3">
+                <p class="text-gray-700 leading-relaxed">
+                  You agree not to use this website for any unlawful purpose.
+                </p>
+                <p class="text-gray-700 leading-relaxed">
+                  You may not attempt to hack, exploit, or misuse the site in any way.
+                </p>
+              </div>
+            </section>
+
+            <section>
+              <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <span class="bg-indigo-100 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">4</span>
+                Changes
+              </h2>
+              <div class="ml-11">
+                <p class="text-gray-700 leading-relaxed">
+                  We may update these terms from time to time. Continued use of the website means you accept the new terms.
+                </p>
+              </div>
+            </section>
+          </div>
+
+          <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+            <p class="text-gray-700 text-lg">
+              If you have questions about these Terms, please contact us at:
+            </p>
+            <p class="mt-2">
+              <a 
+                href="mailto:support@mydailyfeed.com" 
+                class="text-indigo-600 hover:text-indigo-800 font-semibold text-lg underline transition-colors"
+              >
+                support@mydailyfeed.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</Layout>

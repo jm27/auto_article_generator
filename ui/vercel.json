@@ -2,12 +2,18 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/ingest-movies",
+      "path": "/api/content/ingest-movies",
       "schedule": "30 0 * * *"
     },
     {
-      "path": "/api/send-newsletter",
-      "schedule": "45 1 * * *"
+      "path": "/api/newsletter/send-newsletter",
+      "schedule": "25 20 * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/content/sitemap.xml"
     }
   ]
 }
