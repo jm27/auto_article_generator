@@ -1,4 +1,5 @@
 ---
+import Analytics from '@vercel/analytics/astro';
 import AuthWidget from "../components/AuthWidget";
 import SubscribeForm from "../components/SubscribeForm";
 import { isAccessTokenValid, getUserEmailFromToken } from "../utils/helpers";
@@ -126,6 +127,7 @@ console.log("Layout userName:", userName);
         <SubscribeForm client:visible />
       </footer>
     )}
+    <Analytics />
   </body>
 </html>
 

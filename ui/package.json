@@ -16,6 +16,7 @@
     "@tailwindcss/vite": "^4.1.11",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@vercel/analytics": "^2.0.1",
     "astro": "^5.12.9",
     "axios": "^1.10.0",
     "fs": "^0.0.1-security",
@@ -32,9 +33,9 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/html-to-text": "^9.0.4",
     "@types/mjml": "^4.7.4",
-    "@playwright/test": "^1.56.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
